@@ -33,8 +33,8 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION
 @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %EXPORT_TAGS = ('all' => [@EXPORT_OK]);
 
-$revision    = q$Id: Size.pm,v 1.20 2000/12/08 08:20:34 rjray Exp $;
-$VERSION     = "2.904";
+$revision    = q$Id: Size.pm,v 1.21 2000/12/08 08:21:43 rjray Exp $;
+$VERSION     = "2.91";
 
 # Package lexicals - invisible to outside world, used only in imgsize
 #
