@@ -25,8 +25,8 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION
 @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %EXPORT_TAGS = ('all' => [@EXPORT_OK]);
 
-$revision    = q$Id: Size.pm,v 1.16 1999/09/16 04:31:46 rjray Exp $;
-$VERSION     = "3.0";
+$revision    = q$Id: Size.pm,v 1.17 2000/04/26 07:21:04 rjray Exp $;
+$VERSION     = "2.902";
 
 # Package lexicals - invisible to outside world, used only in imgsize
 #
@@ -91,7 +91,7 @@ sub imgsize
     my $stream = shift;
 
     my ($handle, $header);
-    my ($x, $y, $id);
+    my ($x, $y, $id, $mtime, @list);
     # These only used if $stream is an existant open FH
     my ($save_pos, $need_restore) = (0, 0);
 
@@ -131,13 +131,16 @@ sub imgsize
     }
     else
     {
-        unless ($stream =~ m|^/|)
+        $stream = cwd . "/$stream" unless ($stream =~ m|^/|);
+        $mtime = (stat $stream)[9];
+        if (-e "$stream" and exists $cache{$stream})
         {
-            $stream = cwd . "/$stream";
-        }
-        if (-e "$stream" && exists $cache{$stream})
-        {
-            return (split(/,/, $cache{$stream}, 3));
+            @list = split(/,/, $cache{$stream}, 4);
+
+            # Don't return the cache if the file is newer.
+            return @list[1 .. 3] unless ($list[0] < $mtime);
+            # In fact, clear it
+            delete $cache{$stream};
         }
 
         #first try to open the stream
@@ -169,7 +172,7 @@ sub imgsize
     # Added as an afterthought: I'm probably not the only one who uses the
     # same shaded-sphere image for several items on a bulleted list:
     #
-    $cache{$stream} = join(',', $x, $y, $id)
+    $cache{$stream} = join(',', $mtime, $x, $y, $id)
         unless (ref $stream or (! defined $x));
 
     #
@@ -186,8 +189,9 @@ sub html_imgsize
 {
     my @args = imgsize(@_);
 
+    # Use lowercase and quotes so that it works with xhtml.
     return ((defined $args[0]) ?
-            sprintf("WIDTH=%d HEIGHT=%d", @args) :
+            sprintf('width="%d" height="%d"', @args) :
             undef);
 }
 
@@ -196,7 +200,7 @@ sub attr_imgsize
     my @args = imgsize(@_);
 
     return ((defined $args[0]) ?
-            (('-WIDTH', '-HEIGHT', imgsize(@_))[0, 2, 1, 3]) :
+            (('-width', '-height', @args)[0, 2, 1, 3]) :
             undef);
 }
 
@@ -572,14 +576,14 @@ Image::Size - read the dimensions of an image in several popular formats
     # Assume X=60 and Y=40 for remaining examples
 
     use Image::Size 'html_imgsize';
-    # Get the size as "HEIGHT=X WIDTH=Y" for HTML generation
+    # Get the size as 'width="X" height="Y"' for HTML generation
     $size = html_imgsize("globe.gif");
-    # $size == "HEIGHT=40 WIDTH=60"
+    # $size == 'width="60" height="40"'
 
     use Image::Size 'attr_imgsize';
     # Get the size as a list passable to routines in CGI.pm
     @attrs = attr_imgsize("globe.gif");
-    # @attrs == ('-HEIGHT', 40, '-WIDTH', 60)
+    # @attrs == ('-width', 60, '-height', 40)
 
     use Image::Size;
     # Get the size of an in-memory buffer
@@ -588,8 +592,8 @@ Image::Size - read the dimensions of an image in several popular formats
 =head1 DESCRIPTION
 
 The B<Image::Size> library is based upon the C<wwwis> script written by
-Alex Knowles I<(alex@ed.ac.uk)>, a tool to examine HTML and add HEIGHT and
-WIDTH parameters to image tags. The sizes are cached internally based on
+Alex Knowles I<(alex@ed.ac.uk)>, a tool to examine HTML and add 'width' and
+'height' parameters to image tags. The sizes are cached internally based on
 file name, so multiple calls on the same file name (such as images used
 in bulleted lists, for example) do not result in repeated computations.
 
@@ -608,15 +612,16 @@ sizing data whose type is unknown.
 =item html_imgsize(I<stream>)
 
 Returns the width and height (X and Y) of I<stream> pre-formatted as a single
-string C<"HEIGHT=X WIDTH=Y"> suitable for addition into generated HTML IMG
-tags. If the underlying call to C<imgsize> fails, B<undef> is returned.
+string C<'width="X" height="Y"'> suitable for addition into generated HTML IMG
+tags. If the underlying call to C<imgsize> fails, B<undef> is returned. The
+format returned should be dually suited to both HTML and XHTML.
 
 =item attr_imgsize(I<stream>)
 
 Returns the width and height of I<stream> as part of a 4-element list useful
 for routines that use hash tables for the manipulation of named parameters,
 such as the Tk or CGI libraries. A typical return value looks like
-C<("-HEIGHT", Y, "-WIDTH", X)>. If the underlying call to C<imgsize> fails,
+C<("-width", X, "-height", Y)>. If the underlying call to C<imgsize> fails,
 B<undef> is returned.
 
 =back
@@ -717,6 +722,35 @@ error message.
 
 The other two routines simply return B<undef> in the case of error.
 
+=head1 MORE EXAMPLES
+
+The B<attr_imgsize> interface is also well-suited to use with the Tk
+extension:
+
+    $image = $widget->Photo(-file => $img_path, attr_imgsize($img_path));
+
+Since the C<Tk::Image> classes use dashed option names as C<CGI> does, no
+further translation is needed.
+
+This package is also well-suited for use within an Apache web server context.
+File sizes are cached upon read (with a check against the modified time of
+the file, in case of changes), a useful feature for a B<mod_perl> environment
+in which a child process endures beyond the lifetime of a single request.
+Other aspects of the B<mod_perl> environment cooperate nicely with this
+module, such as the ability to use a sub-request to fetch the full pathname
+for a file within the server space. This complements the HTML generation
+capabilities of the B<CGI> module, in which C<CGI::img> wants a URL but
+C<attr_imgsize> needs a file path:
+
+    # Assume $Q is an object of class CGI, $r is an Apache request object.
+    # $imgpath is a URL for something like "/img/redball.gif".
+    $r->print($Q->img({ -src => $imgpath,
+                        attr_imgsize($r->lookup_uri($imgpath)->filename) }));
+
+The advantage here, besides not having to hard-code the server document root,
+is that Apache passes the sub-request through the usual request lifecycle,
+including any stages that would re-write the URL or otherwise modify it.
+
 =head1 CAVEATS
 
 Caching of size data can only be done on inputs that are file names. Open
@@ -744,6 +778,8 @@ I<(dvk@lonewolf.com)> contributed a re-write of the GIF code.  Cloyce Spradling
 I<(cloyce@headgear.org)> contributed TIFF sizing code and test images. Aldo
 Calpini I<(a.calpini@romagiubileo.it)> suggested support of BMP images (which
 I I<really> should have already thought of :-) and provided code to work
-with.
+with. A patch to allow html_imgsize to produce valid output for XHTML, as
+well as some documentation fixes was provided by Charles Levert
+I<(charles@comm.polymtl.ca)>.
 
 =cut
