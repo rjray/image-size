@@ -6,7 +6,7 @@ use Image::Size qw(:all);
 
 ($dir = $0) =~ s/\w+\.t$//o;
 
-print "1..13\n";
+print "1..14\n";
 
 #
 # Phase one, tests 1-10: basic types tested on files.
@@ -44,6 +44,10 @@ print (($x == 35 && $y == 32 && $id eq 'TIF') ? "ok 9\n" : "not ok 9\n");
 ($x, $y, $id) = imgsize("${dir}bexjdic.tif");
 print (($x == 35 && $y == 32 && $id eq 'TIF') ? "ok 10\n" : "not ok 10\n");
 
+# Test BMP code from Aldo Calpini
+($x, $y, $id) = imgsize("${dir}xterm.bmp");
+print (($x == 64 && $y == 38 && $id eq 'BMP') ? "ok 11\n" : "not ok 11\n");
+
 #
 # Phase two: tests on in-memory strings.
 #
@@ -52,14 +56,14 @@ $data = '';
 read $fh, $data, (stat "${dir}test.gif")[7];
 $fh->close;
 ($x, $y, $id) = imgsize(\$data);
-print (($x == 60 && $y == 40 && $id eq 'GIF') ? "ok 11\n" : "not ok 11\n");
+print (($x == 60 && $y == 40 && $id eq 'GIF') ? "ok 12\n" : "not ok 12\n");
 
 #
 # Phase three: tests on open IO::File objects.
 #
 $fh = new IO::File "< ${dir}test.gif";
 ($x, $y, $id) = imgsize($fh);
-print (($x == 60 && $y == 40 && $id eq 'GIF') ? "ok 12\n" : "not ok 12\n");
+print (($x == 60 && $y == 40 && $id eq 'GIF') ? "ok 13\n" : "not ok 13\n");
 
 # Reset to head
 $fh->seek(0, 0);
@@ -68,7 +72,7 @@ $fh->seek(128, 0);
 # Do it again. This time when we check results, $fh->tell should be 128
 ($x, $y, $id) = imgsize($fh);
 print STDOUT (($x == 60 && $y == 40 && $id eq 'GIF' && ($fh->tell == 128)) ?
-              "ok 13\n" : "not ok 13\n");
+              "ok 14\n" : "not ok 14\n");
 
 $fh->close;
 
