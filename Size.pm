@@ -210,8 +210,8 @@ use vars qw($revision $VERSION $read_in $last_pos);
 @Image::Size::EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %Image::Size::EXPORT_TAGS = (q/all/ => [@Image::Size::EXPORT_OK]);
 
-$Image::Size::revision    = q$Id: Size.pm,v 1.8 1997/12/25 01:11:48 randyr Exp $;
-$Image::Size::VERSION     = "2.5";
+$Image::Size::revision    = q$Id: Size.pm,v 1.9 1998/01/24 21:25:44 rjray Exp $;
+$Image::Size::VERSION     = "2.6";
 
 # Enable direct use of AutoLoader's AUTOLOAD function:
 *Image::Size::AUTOLOAD = \&AutoLoader::AUTOLOAD;
@@ -221,14 +221,14 @@ $Image::Size::VERSION     = "2.5";
 # Cache of files seen, and mapping of patterns to the sizing routine
 my %cache = ();
 
-my %type_map = ( 'GIF8[7,9]a'              => 'gifsize',
-                 "\xFF\xD8"                => 'jpegsize',
-                 "\x89PNG\x0d\x0a\x1a\x0a" => 'pngsize',
-                 "^P[1-6]\n"               => 'ppmsize',
-                 '\#define\s+\S+\s+\d+'    => 'xbmsize',
-                 '\/\* XPM \*\/'           => 'xpmsize',
-                 'MM\x00\x2a'              => 'tiffsize',
-                 'II\x2a\x00'              => 'tiffsize' );
+my %type_map = ( '^GIF8[7,9]a'              => 'gifsize',
+                 "^\xFF\xD8"                => 'jpegsize',
+                 "^\x89PNG\x0d\x0a\x1a\x0a" => 'pngsize',
+                 "^P[1-6]\n"                => 'ppmsize',
+                 '\#define\s+\S+\s+\d+'     => 'xbmsize',
+                 '\/\* XPM \*\/'            => 'xpmsize',
+                 '^MM\x00\x2a'              => 'tiffsize',
+                 '^II\x2a\x00'              => 'tiffsize' );
 
 #
 # These are lexically-scoped anonymous subroutines for reading the three
@@ -302,14 +302,14 @@ sub imgsize
         #
         binmode($handle);
         $handle->seek(0, 0);
-        read $handle, $header, 80;
+        read $handle, $header, 256;
         $handle->seek(0, 0);
     }
     elsif (ref($stream) eq "SCALAR")
     {
         $handle = $stream;
         $read_in = $read_buf;
-        $header = substr($$handle, 0, 80);
+        $header = substr($$handle, 0, 256);
     }
     else
     {
@@ -325,7 +325,7 @@ sub imgsize
 
         # assist dain-bramaged operating systems -- SWD
         binmode($handle);
-        read $handle, $header, 80;
+        read $handle, $header, 256;
         $handle->seek(0, 0);
         $read_in = $read_io;
     }
@@ -340,7 +340,7 @@ sub imgsize
     $x  = undef;
     $y  = undef;
 
-    grep($header =~ /^$_/ && (($x, $y, $id) = &{$type_map{$_}}($handle)),
+    grep($header =~ /$_/ && (($x, $y, $id) = &{$type_map{$_}}($handle)),
          keys %type_map);
     
     #
@@ -515,7 +515,7 @@ sub xbmsize
     my $input;
     my ($x, $y, $id) = (undef, undef, "Could not determine XBM size");
     
-    $input = &$read_in($stream, 160);
+    $input = &$read_in($stream, 1024);
     if ($input =~ /^\#define\s*\S*\s*(\d*)\s*\n\#define\s*\S*\s*(\d*)\s*\n/moi)
     {
         ($x, $y) = ($1, $2);
@@ -538,7 +538,7 @@ sub xpmsize
 
     while ($line = &$read_in($stream, 1024))
     {
-        next unless ($line =~ /"\s*(\d+)\s+(\d+)\s+\d+\s+\d+"/mo);
+        next unless ($line =~ /"\s*(\d+)\s+(\d+)(\s+\d+\s+\d+){1,2}"/mo);
         ($x, $y) = ($1, $2);
         $id = 'XPM';
         last;
@@ -657,7 +657,7 @@ sub tiffsize {
 
     my ($x, $y, $id) = (undef, undef, "Unable to determine size of TIFF data");
 
-    my $endian = 'n';		# Default to big-endian; I like it better
+    my $endian = 'n';           # Default to big-endian; I like it better
     my $header = &$read_in($stream, 4);
     $endian = 'v' if ($header =~ /II\x2a\x00/o); # little-endian
 
@@ -665,17 +665,17 @@ sub tiffsize {
     # pack/unpack specification.  Don't take any special pains to deal with
     # signed numbers; treat them as unsigned because none of the image
     # dimensions should ever be negative.  (I hope.)
-    my @packspec = ( undef,	# nothing (shouldn't happen)
-		     'C',	# BYTE (8-bit unsigned integer)
-		     undef,	# ASCII
-		     $endian,	# SHORT (16-bit unsigned integer)
-		     uc($endian), # LONG (32-bit unsigned integer)
-		     undef,	# RATIONAL
-		     'c',	# SBYTE (8-bit signed integer)
-		     undef,	# UNDEFINED
-		     $endian,	# SSHORT (16-bit unsigned integer)
-		     uc($endian), # SLONG (32-bit unsigned integer)
-		     );
+    my @packspec = ( undef,     # nothing (shouldn't happen)
+                     'C',       # BYTE (8-bit unsigned integer)
+                     undef,     # ASCII
+                     $endian,   # SHORT (16-bit unsigned integer)
+                     uc($endian), # LONG (32-bit unsigned integer)
+                     undef,     # RATIONAL
+                     'c',       # SBYTE (8-bit signed integer)
+                     undef,     # UNDEFINED
+                     $endian,   # SSHORT (16-bit unsigned integer)
+                     uc($endian), # SLONG (32-bit unsigned integer)
+                     );
 
     my $offset = &$read_in($stream, 4, 4); # Get offset to IFD
     $offset = unpack(uc($endian), $offset); # Fix it so we can use it
@@ -683,40 +683,40 @@ sub tiffsize {
     my $ifd = &$read_in($stream, 2, $offset); # Get number of directory entries
     my $num_dirent = unpack($endian, $ifd); # Make it useful
     $offset += 2;
-    $num_dirent = $offset + ($num_dirent * 12);	# Calc. maximum offset of IFD
+    $num_dirent = $offset + ($num_dirent * 12); # Calc. maximum offset of IFD
 
     # Do all the work
     $ifd = '';
     my $tag = 0;
     my $type = 0;
     while (!defined($x) || !defined($y)) {
-	$ifd = &$read_in($stream, 12, $offset); # Get first directory entry
-	last if (($ifd eq '') || ($offset > $num_dirent));
-	$offset += 12;
-	$tag = unpack($endian, $ifd); # ...and decode its tag
-	$type = unpack($endian, substr($ifd, 2, 2)); # ...and the data type
-	# Check the type for sanity.
-	next if (($type > @packspec+0) || (!defined($packspec[$type])));
-	if ($tag == 0x0100) {	# ImageWidth (x)
-	    # Decode the value
-	    $x = unpack($packspec[$type], substr($ifd, 8, 4));
-	} elsif ($tag == 0x0101) {	# ImageLength (y)
-	    # Decode the value
-	    $y = unpack($packspec[$type], substr($ifd, 8, 4));
-	}
+        $ifd = &$read_in($stream, 12, $offset); # Get first directory entry
+        last if (($ifd eq '') || ($offset > $num_dirent));
+        $offset += 12;
+        $tag = unpack($endian, $ifd); # ...and decode its tag
+        $type = unpack($endian, substr($ifd, 2, 2)); # ...and the data type
+        # Check the type for sanity.
+        next if (($type > @packspec+0) || (!defined($packspec[$type])));
+        if ($tag == 0x0100) {   # ImageWidth (x)
+            # Decode the value
+            $x = unpack($packspec[$type], substr($ifd, 8, 4));
+        } elsif ($tag == 0x0101) {      # ImageLength (y)
+            # Decode the value
+            $y = unpack($packspec[$type], substr($ifd, 8, 4));
+        }
     }
 
     # Decide if we were successful or not
     if (defined($x) && defined($y)) {
-	$id = 'TIF';
+        $id = 'TIF';
     } else {
-	$id = '';
-	$id = 'ImageWidth ' if (!defined($x));
-	if (!defined ($y)) {
-	    $id .= 'and ' if ($id ne '');
-	    $id .= 'ImageLength ';
-	}
-	$id .= 'tag(s) could not be found';
+        $id = '';
+        $id = 'ImageWidth ' if (!defined($x));
+        if (!defined ($y)) {
+            $id .= 'and ' if ($id ne '');
+            $id .= 'ImageLength ';
+        }
+        $id .= 'tag(s) could not be found';
     }
 
     ($x, $y, $id);
