@@ -1,6 +1,14 @@
 CHANGE HISTORY
 
-This is version 2.903:
+Changes in 2.904:
+
+* Added a PREREQ_PM clause in Makefile.PL for systems that do not (yet) have
+  File::Spec installed.
+
+* Experimental (untested, no test cases) PSD support.
+
+
+Changes in 2.903:
 
 * Added a patch from <schinder@pobox.com>, reported as part of the CPAN
   Testors effort. This abstracts some UNIX-centric treatment of file paths,

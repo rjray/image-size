@@ -3,7 +3,7 @@ MANIFEST				This file
 Makefile.PL				MM template
 README					Description and details
 README.Win32				Special considerations for Win NT/95/98
-Size.pm					v2.902
+Size.pm					the code
 imgsize.PL				Utility script template (front-end)
 t/all.t					test suite
 t/letter_T.jpg				Support files for tests
