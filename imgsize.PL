@@ -83,7 +83,7 @@ L<Image::Size>
 
 =head1 AUTHOR
 
-Randy J. Ray <rjray@uswest.com>
+Randy J. Ray <rjray@tsoft.com>
 
 =cut
 
