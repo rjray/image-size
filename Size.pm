@@ -36,8 +36,8 @@ BEGIN
     @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize $NO_CACHE $PCD_SCALE);
     %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-    $revision = q$Id: Size.pm,v 1.33 2003/01/03 08:56:24 rjray Exp $;
-    $VERSION = "2.99";
+    $revision = q$Id: Size.pm,v 1.34 2003/01/03 09:09:13 rjray Exp $;
+    $VERSION = "2.991";
 
     # Check if we have Image::Magick available
     eval {
@@ -139,8 +139,6 @@ my $read_buf = sub {
 
     $data;
 };
-
-1;
 
 sub imgsize
 {
@@ -584,6 +582,8 @@ found several typos and a small buglet. Ville Skyttä I<(ville.skytta@iki.fi)>
 provided the MNG and the Image::Magick fallback code.
 
 =cut
+
+1;
 
 __END__
 
