@@ -33,8 +33,8 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION $NO_CACHE
 @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize $NO_CACHE $PCD_SCALE);
 %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-$revision    = q$Id: Size.pm,v 1.26 2001/11/11 11:41:02 rjray Exp $;
-$VERSION     = "2.95";
+$revision    = q$Id: Size.pm,v 1.27 2001/11/20 23:38:01 rjray Exp $;
+$VERSION     = "2.96";
 
 # This allows people to specifically request that the cache not be used
 $NO_CACHE = 0;
@@ -914,7 +914,7 @@ sub pcdsize
     # Second-tier sanity check
     return ($x, $y, $id) unless (substr($buffer, 0x800, 3) eq 'PCD');
 
-    my $orient = ord(substr($buf, 0x0e02, 1)) & 1; # Clear down to one bit
+    my $orient = ord(substr($buffer, 0x0e02, 1)) & 1; # Clear down to one bit
     ($x, $y) = @{$Image::Size::PCD_MAP{lc $Image::Size::PCD_SCALE}}
         [($orient ? (0, 1) : (1, 0))];
 
