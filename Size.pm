@@ -20,21 +20,54 @@ package Image::Size;
 require 5.002;
 
 use strict;
-use Cwd 'cwd';
-use File::Spec;
-use Symbol;
+use Cwd ();
+use File::Spec ();
+use Symbol ();
 use AutoLoader 'AUTOLOAD';
-use Exporter;
+require Exporter;
 use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION $NO_CACHE
-            %PCD_MAP $PCD_SCALE $read_in $last_pos);
+            %PCD_MAP $PCD_SCALE $read_in $last_pos *imagemagick_size);
 
-@ISA         = qw(Exporter);
-@EXPORT      = qw(imgsize);
-@EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize $NO_CACHE $PCD_SCALE);
-%EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
+BEGIN
+{
 
-$revision    = q$Id: Size.pm,v 1.31 2002/03/02 07:47:11 rjray Exp $;
-$VERSION     = "2.98";
+    @ISA         = qw(Exporter);
+    @EXPORT      = qw(imgsize);
+    @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize $NO_CACHE $PCD_SCALE);
+    %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
+
+    $revision = q$Id: Size.pm,v 1.32 2002/05/04 08:23:29 rjray Exp $;
+    $VERSION = "2.99";
+
+    # Check if we have Image::Magick available
+    eval {
+        local $SIG{__DIE__}; # protect against user installed die handlers
+        require Image::Magick;
+    };
+    if ($@) {
+        *imagemagick_size =
+            sub
+            {
+                (undef, undef, "Data stream is not a known image file format");
+            };
+    } else {
+        *imagemagick_size =
+            sub
+            {
+                my ($file_name) = @_;
+                my $img = Image::Magick->new();
+                my $x = $img->Read($file_name);
+                # Image::Magick error handling is a bit weird, see
+                # <http://www.simplesystems.org/ImageMagick/www/perl.html#erro>
+                if("$x") {
+                    return (undef, undef, "$x");
+                } else {
+                    return ($img->Get('width', 'height', 'format'));
+                }
+            };
+    }
+
+}
 
 # This allows people to specifically request that the cache not be used
 $NO_CACHE = 0;
@@ -54,7 +87,8 @@ my %type_map = ( '^GIF8[7,9]a'              => \&gifsize,
                  '^BM'                      => \&bmpsize,
                  '^8BPS'                    => \&psdsize,
                  '^PCD_OPA'                 => \&pcdsize,
-                 '^FWS'                     => \&swfsize);
+                 '^FWS'                     => \&swfsize,
+                 "^\x8aMNG\x0d\x0a\x1a\x0a" => \&mngsize);
 # Kodak photo-CDs are weird. Don't ask me why, you really don't want details.
 %PCD_MAP = ( 'base/16' => [ 192,  128  ],
              'base/4'  => [ 384,  256  ],
@@ -118,6 +152,8 @@ sub imgsize
     my ($save_pos, $need_restore) = (0, 0);
     # This is for when $stream is a locally-opened file
     my $need_close = 0;
+    # This will contain the file name, if we got one
+    my $file_name = undef;
 
     $header = '';
 
@@ -157,7 +193,7 @@ sub imgsize
     {
         unless ($NO_CACHE)
         {
-            $stream = File::Spec->catfile(cwd(),$stream)
+            $stream = File::Spec->catfile(Cwd::cwd(),$stream)
                 unless File::Spec->file_name_is_absolute($stream);
             $mtime = (stat $stream)[9];
             if (-e "$stream" and exists $cache{$stream})
@@ -172,7 +208,7 @@ sub imgsize
         }
 
         #first try to open the stream
-        $handle = gensym;
+        $handle = Symbol::gensym();
         open($handle, "< $stream") or
             return (undef, undef, "Can't open image file $stream: $!");
 
@@ -182,6 +218,7 @@ sub imgsize
         read $handle, $header, 256;
         seek($handle, 0, 0);
         $read_in = $read_io;
+        $file_name = $stream;
     }
     $last_pos = 0;
 
@@ -211,6 +248,14 @@ sub imgsize
     seek($handle, $save_pos, 0) if $need_restore;
     # ...and if we opened the file ourselves, we need to close it
     close($handle) if $need_close;
+
+    #
+    # Image::Magick operates on file names.
+    #
+    if ($file_name && ! defined($x) && ! defined($y)) {
+        ($x, $y, $id) = imagemagick_size($file_name);
+    }
+
 
     # results:
     return (wantarray) ? ($x, $y, $id) : ();
@@ -297,7 +342,7 @@ sizing data whose type is unknown.
 Returns the width and height (X and Y) of I<stream> pre-formatted as a single
 string C<'width="X" height="Y"'> suitable for addition into generated HTML IMG
 tags. If the underlying call to C<imgsize> fails, B<undef> is returned. The
-format returned should be dually suited to both HTML and XHTML.
+format returned is dually suited to both HTML and XHTML.
 
 =item attr_imgsize(I<stream>)
 
@@ -351,7 +396,7 @@ restored to its original position before subroutine end.
 
 =head2 Recognized Formats
 
-Image::Size understands and sizes data in the following formats:
+Image::Size natively understands and sizes data in the following formats:
 
 =over 4
 
@@ -369,6 +414,8 @@ Image::Size understands and sizes data in the following formats:
 
 =item PNG
 
+=item MNG
+
 =item TIF
 
 =item BMP
@@ -381,12 +428,21 @@ Image::Size understands and sizes data in the following formats:
 
 =back
 
+Additionally, if the B<Image::Magick> module is present, the file types
+supported by it are also supported by Image::Size.  See also L<"CAVEATS">.
+
 When using the C<imgsize> interface, there is a third, unused value returned
 if the programmer wishes to save and examine it. This value is the identity of
 the data type, expressed as a 2-3 letter abbreviation as listed above. This is
 useful when operating on open file handles or in-memory data, where the type
 is as unknown as the size.  The two support routines ignore this third return
 value, so those wishing to use it must use the base C<imgsize> routine.
+
+Note that when the B<Image::Magick> fallback is used (for all non-natively
+supported files), the data type identity comes directly from the 'format'
+parameter reported by B<Image::Magick>, so it may not meet the 2-3 letter
+abbreviation format.  For example, a WBMP file might be reported as
+'Wireless Bitmap (level 0) image' in this case.
 
 =head2 Information Cacheing and C<$NO_CACHE>
 
@@ -493,10 +549,13 @@ unique key for the table of cache data. Buffers could be cached using the
 MD5 module, and perhaps in the future I will make that an option. I do not,
 however, wish to lengthen the dependancy list by another item at this time.
 
+As B<Image::Magick> operates on file names, not handles, the use of it is
+restricted to cases where the input to C<imgsize> is provided as file name.
+
 =head1 SEE ALSO
 
 C<http://www.tardis.ed.ac.uk/~ark/wwwis/> for a description of C<wwwis>
-and how to obtain it.
+and how to obtain it, L<Image::Magick>.
 
 =head1 AUTHORS
 
@@ -521,7 +580,8 @@ supplied the PSD (PhotoShop) code, a bug was identified by Alex Weslowski
 was adapted from a script made available by Phil Greenspun, as guided to my
 attention by Matt Mueller I<mueller@wetafx.co.nz>. A thorough read of the
 documentation and source by Philip Newton I<Philip.Newton@datenrevision.de>
-found several typos and a small buglet.
+found several typos and a small buglet. Ville Skyttä I<(ville.skytta@iki.fi)>
+provided the MNG and the Image::Magick fallback code.
 
 =cut
 
@@ -697,6 +757,30 @@ sub pngsize
         $length = 8;
         ($x, $y) = unpack("NN", &$read_in($stream, $length));
         $id = 'PNG';
+    }
+
+    ($x, $y, $id);
+}
+
+# mngsize: gets the width and height (in pixels) of an MNG file.
+# See <URL:http://www.libpng.org/pub/mng/spec/> for the specification.
+#
+# Basically a copy of pngsize.
+sub mngsize
+{
+    my $stream = shift;
+
+    my ($x, $y, $id) = (undef, undef, "could not determine MNG size");
+    my ($offset, $length);
+
+    # Offset to first Chunk Type code = 8-byte ident + 4-byte chunk length + 1
+    $offset = 12; $length = 4;
+    if (&$read_in($stream, $length, $offset) eq 'MHDR')
+    {
+        # MHDR = Image Header
+        $length = 8;
+        ($x, $y) = unpack("NN", &$read_in($stream, $length));
+        $id = 'MNG';
     }
 
     ($x, $y, $id);
