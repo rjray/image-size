@@ -6,7 +6,7 @@ use Image::Size qw(:all);
 
 ($dir = $0) =~ s/\w+\.t$//o;
 
-print "1..15\n";
+print "1..16\n";
 
 #
 # Phase one, tests 1-10: basic types tested on files.
@@ -52,6 +52,10 @@ print (($x == 64 && $y == 38 && $id eq 'BMP') ? "ok 11\n" : "not ok 11\n");
 ($x, $y, $id) = imgsize("${dir}yasp.swf");
 print (($x == 85 && $y == 36 && $id eq 'SWF') ? "ok 12\n" : "not ok 12\n");
 
+# Test the PSD code (orig. contributer unknown)
+($x, $y, $id) = imgsize("${dir}468x60.psd");
+print (($x == 468 && $y == 60 && $id eq 'PSD') ? "ok 13\n" : "not ok 13\n");
+
 #
 # Phase two: tests on in-memory strings.
 #
@@ -60,14 +64,14 @@ $data = '';
 read $fh, $data, (stat "${dir}test.gif")[7];
 $fh->close;
 ($x, $y, $id) = imgsize(\$data);
-print (($x == 60 && $y == 40 && $id eq 'GIF') ? "ok 13\n" : "not ok 13\n");
+print (($x == 60 && $y == 40 && $id eq 'GIF') ? "ok 14\n" : "not ok 14\n");
 
 #
 # Phase three: tests on open IO::File objects.
 #
 $fh = new IO::File "< ${dir}test.gif";
 ($x, $y, $id) = imgsize($fh);
-print (($x == 60 && $y == 40 && $id eq 'GIF') ? "ok 14\n" : "not ok 14\n");
+print (($x == 60 && $y == 40 && $id eq 'GIF') ? "ok 15\n" : "not ok 15\n");
 
 # Reset to head
 $fh->seek(0, 0);
@@ -76,7 +80,7 @@ $fh->seek(128, 0);
 # Do it again. This time when we check results, $fh->tell should be 128
 ($x, $y, $id) = imgsize($fh);
 print STDOUT (($x == 60 && $y == 40 && $id eq 'GIF' && ($fh->tell == 128)) ?
-              "ok 15\n" : "not ok 15\n");
+              "ok 16\n" : "not ok 16\n");
 
 $fh->close;
 
