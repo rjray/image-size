@@ -1,5 +1,10 @@
 CHANGE HISTORY
 
+Changes in 2.992:
+
+* Added support for FlashMX (Shockwave Flash ver. 6), as contributed by
+  Victor L Kuriashkin <victor@yasp.com>.
+
 Changes in 2.991:
 
 * Small fix to setup of scalar refs in Size.pm, in case the ref points to

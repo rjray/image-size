@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.991 (See CHANGES below)
+Version: 2.992 (See CHANGES below)
 
 WHAT IS IT
 
@@ -74,9 +74,5 @@ Please send any reports of problems or bugs to rjray@blackperl.com.
 
 CHANGES
 
-This is version 2.991:
-
-Small fix to setup of scalar refs in Size.pm, in case the ref points to
-an undef value.
-
-Code clean-up on the imgsize script.
+* Added support for FlashMX (Shockwave Flash ver. 6), as contributed by
+  Victor L Kuriashkin <victor@yasp.com>.
