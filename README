@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.6 (See CHANGE HISTORY below)
+Version: 2.7 (See CHANGE HISTORY below)
 
 WHAT IS IT
 
@@ -12,8 +12,8 @@ a set of attribute pairs suitable for the CGI.pm library by Lincoln Stein.
 Currently, Image::Size can size images in XPM, XBM, GIF, JPEG, PNG, TIFF
 and the PPM family of formats (PPM/PGM/PBM).
 
-I did this because my WWW server generates a lot of documents on demand
-rather than keeping them in static files. These documents not only use
+I did this because my old WWW server generated a lot of documents on demand
+rather than keeping them in static files. These documents not only used
 directional icons and buttons, but other graphics to annotate and highlight
 sections of the text. Without size attributes, browsers cannot render the
 text of a page until the image data is loaded and the size known for layout.
@@ -62,20 +62,17 @@ You may need super-user access to install.
 
 PROBLEMS/BUG REPORTS
 
-Please send any reports of problems or bugs to randy@byz.org. I wouldn't
-mind a short note to know that you're using this, just so I can justify its
-continued development to my manager :-). (In seriousness, a rough idea of
-how many others are using this will help promote its upkeep.)
+Please send any reports of problems or bugs to rjray@tsoft.com.
 
 
 CREDITS AND LICENSES
 
-This package is copyright © 1996 by Randy Ray (randy@byz.org) and may be
+This package is copyright © 1996,1998 by Randy Ray (rjray@tsoft.com) and may be
 distributed under terms of the Artistic License used to cover Perl itself.
 See the file Artistic in the distribution of Perl 5.002 or later for details
 of copy and distribution terms.
 
-Perl module interface by Randy J. Ray (randy@byz.org), original
+Perl module interface by Randy J. Ray (rjray@tsoft.com), original
 image-sizing code by Alex Knowles (alex@ed.ac.uk) and Andrew Tong
 (werdna@ugcs.caltech.edu), used with their joint permission.
 
@@ -91,13 +88,16 @@ Silas Dunsmore <silasd@psyber.com>.
 
 CHANGE HISTORY
 
-This is version 2.6:
+This is version 2.7:
 
-* 2.5 did not actually deliver the tests for the new TIFF code. Oops.
+* Corrected numerous documentation bugs in which I repeatedly referred to the
+  X and Y dimensions in the wrong order. This was pointed out by several
+  people, but I also kept forgetting to attend to it.
 
-* Found some variations of the formats of XPM and XBM that were not
-  compatible with the regex's being used. Tricky, flexible little devils,
-  especially XPM.
+* The base routine imgsize now returns a null list when called in a void
+  or scalar context. Mainly, I like pre-loading the cache under mod_perl in
+  Apache (so that spawned children inherit the cache) and didn't like the
+  idea of all those calls populating a stack that was then ignored.
 
 Initial version 1.0:
 
@@ -196,3 +196,11 @@ Changes in 2.5:
 * Added support for TIFF images and two test cases. Many thanks to Cloyce
   Spradling <cloyce@headgear.org> for both the code patches and the test
   images.
+
+Changes in 2.6:
+
+* 2.5 did not actually deliver the tests for the new TIFF code. Oops.
+
+* Found some variations of the formats of XPM and XBM that were not
+  compatible with the regex's being used. Tricky, flexible little devils,
+  especially XPM.
