@@ -217,8 +217,8 @@ use vars qw($revision $VERSION $read_in $last_pos);
 @Image::Size::EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %Image::Size::EXPORT_TAGS = (q/all/ => [@Image::Size::EXPORT_OK]);
 
-$Image::Size::revision    = q$Id: Size.pm,v 1.12 1998/12/07 10:18:08 rjray Exp $;
-$Image::Size::VERSION     = "2.8";
+$Image::Size::revision    = q$Id: Size.pm,v 1.13 1998/12/09 08:58:03 rjray Exp $;
+$Image::Size::VERSION     = "2.9";
 
 # Enable direct use of AutoLoader's AUTOLOAD function:
 *Image::Size::AUTOLOAD = \&AutoLoader::AUTOLOAD;
@@ -228,10 +228,13 @@ $Image::Size::VERSION     = "2.8";
 # Cache of files seen, and mapping of patterns to the sizing routine
 my %cache = ();
 
+# Try to catch the variants of eol-indicators for the sake of PPM family
+my $end = (($^O =~ /Win32/i) ? '\015' :
+           ($^O =~ /MacOS/i) ? '\r' : '\n');
 my %type_map = ( '^GIF8[7,9]a'              => 'gifsize',
                  "^\xFF\xD8"                => 'jpegsize',
                  "^\x89PNG\x0d\x0a\x1a\x0a" => 'pngsize',
-                 "^P[1-6]\n"                => 'ppmsize',
+                 "^P[1-6]$end"              => 'ppmsize',
                  '\#define\s+\S+\s+\d+'     => 'xbmsize',
                  '\/\* XPM \*\/'            => 'xpmsize',
                  '^MM\x00\x2a'              => 'tiffsize',
@@ -463,57 +466,49 @@ sub gifsize
             $y += $h * 256;
             return ($x, $y, 'GIF');
         }
-        if ($type eq "GIF89a")
+        if ($x == 0x21)
         {
-            if ($x == 0x21)
+            # Extension Introducer (GIF89a 23.c.i, could also be in GIF87a)
+            $buf = &$read_in($stream, 1);
+            ($x) = unpack("C", $buf);
+            if ($x == 0xF9)
             {
-                # Extension Introducer (GIF89a 23.c.i)
-                $buf = &$read_in($stream, 1);
-                ($x) = unpack("C", $buf);
-                if ($x == 0xF9)
-                {
-                    # Graphic Control Extension (GIF89a 23.c.ii)
-                    &$read_in($stream, 6);    # Skip it
-                    next FINDIMAGE;       # Look again for Image Descriptor
-                }
-                elsif ($x == 0xFE)
-                {
-                    # Comment Extension (GIF89a 24.c.ii)
-                    &$gif_blockskip(0, "Comment");
-                    next FINDIMAGE;       # Look again for Image Descriptor
-                }
-                elsif ($x == 0x01)
-                {
-                    # Plain Text Label (GIF89a 25.c.ii)
-                    &$gif_blockskip(13, "text data");
-                    next FINDIMAGE;       # Look again for Image Descriptor
-                }
-                elsif ($x == 0xFF)
-                {
-                    # Application Extension Label (GIF89a 26.c.ii)
-                    &$gif_blockskip(12, "application data");
-                    next FINDIMAGE;       # Look again for Image Descriptor
-                }
-                else
-                {
-                    return (undef, undef,
-                            sprintf("Invalid/Corrupted GIF (Unknown " .
-                                    "extension %#x)", $x));
-                }
+                # Graphic Control Extension (GIF89a 23.c.ii)
+                &$read_in($stream, 6);    # Skip it
+                next FINDIMAGE;       # Look again for Image Descriptor
+            }
+            elsif ($x == 0xFE)
+            {
+                # Comment Extension (GIF89a 24.c.ii)
+                &$gif_blockskip(0, "Comment");
+                next FINDIMAGE;       # Look again for Image Descriptor
+            }
+            elsif ($x == 0x01)
+            {
+                # Plain Text Label (GIF89a 25.c.ii)
+                &$gif_blockskip(13, "text data");
+                next FINDIMAGE;       # Look again for Image Descriptor
+            }
+            elsif ($x == 0xFF)
+            {
+                # Application Extension Label (GIF89a 26.c.ii)
+                &$gif_blockskip(12, "application data");
+                next FINDIMAGE;       # Look again for Image Descriptor
             }
             else
-            { 
+            {
                 return (undef, undef,
-                        sprintf("Invalid/Corrupted GIF (Unknown code %#x)",
-                                $x));
+                        sprintf("Invalid/Corrupted GIF (Unknown " .
+                                "extension %#x)", $x));
             }
         }
         else
-        {
+        { 
             return (undef, undef,
-                    "Invalid/Corrupted GIF (missing GIF87a Image Descriptor)");
+                    sprintf("Invalid/Corrupted GIF (Unknown code %#x)",
+                            $x));
         }
-    } 
+    }
 }
 
 sub xbmsize
@@ -741,7 +736,7 @@ sub bmpsize
     my ($buffer);
 
     $buffer = &$read_in($stream, 26);
-    ($x, $y) = unpack("x18LL", $buffer);
+    ($x, $y) = unpack("x18VV", $buffer);
     $id = 'BMP' if (defined $x and defined $y);
 
     ($x, $y, $id);
