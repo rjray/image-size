@@ -130,8 +130,8 @@ use vars qw($revision $VERSION); # Defeat "used only once" warnings
 @Image::Size::EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %Image::Size::EXPORT_TAGS = (q/all/ => [@Image::Size::EXPORT_OK]);
 
-$Image::Size::revision    = q/$Id: Size.pm,v 1.2 1996/09/04 21:18:52 rjray Exp $/;
-$Image::Size::VERSION     = "1.1";
+$Image::Size::revision    = q$Id: Size.pm,v 1.3 1996/09/06 14:47:23 rjray Exp $;
+$Image::Size::VERSION     = "1.2";
 
 # Package lexical - invisible to outside world, used only in imgsize
 my %_cache = ();
