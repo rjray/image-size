@@ -33,8 +33,8 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION
 @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %EXPORT_TAGS = ('all' => [@EXPORT_OK]);
 
-$revision    = q$Id: Size.pm,v 1.22 2001/03/11 22:49:41 rjray Exp $;
-$VERSION     = "2.92";
+$revision    = q$Id: Size.pm,v 1.23 2001/04/13 08:51:40 rjray Exp $;
+$VERSION     = "2.93";
 
 # Package lexicals - invisible to outside world, used only in imgsize
 #
@@ -50,7 +50,8 @@ my %type_map = ( '^GIF8[7,9]a'              => \&gifsize,
                  '^MM\x00\x2a'              => \&tiffsize,
                  '^II\x2a\x00'              => \&tiffsize,
                  '^BM'                      => \&bmpsize,
-                 '^8BPS'                    => \&psdsize);
+                 '^8BPS'                    => \&psdsize,
+		 '^FWS'                     => \&swfsize);
 
 #
 # These are lexically-scoped anonymous subroutines for reading the three
@@ -594,6 +595,24 @@ sub psdsize
     ($x, $y, $id);
 }
 
+# swfsize: determine size of ShockWave/Flash files. Adapted from code sent by
+# Dmitry Dorofeev <dima@yasp.com>
+sub swfsize
+{
+    my ($image) = @_;
+    my $header = &$read_in($image, 33);
+
+    sub _bin2int { unpack("N", pack("B32", substr("0" x 32 . shift, -32))); }
+
+    my $ver = _bin2int(unpack 'B8', substr($header, 3, 1));
+    my $bs = unpack 'B133', substr($header, 8, 17);
+    my $bits = _bin2int(substr($bs, 0, 5));
+    my $x = int(_bin2int(substr($bs, 5+$bits, $bits))/20);
+    my $y = int(_bin2int(substr($bs, 5+$bits*3, $bits))/20);
+
+    return ($x, $y, 'SWF');
+}
+
 =head1 NAME
 
 Image::Size - read the dimensions of an image in several popular formats
@@ -701,39 +720,27 @@ restored to its original position before subroutine end.
 
 Image::Size understands and sizes data in the following formats:
 
-=over
+=over 4
 
-=item
+=item GIF
 
-GIF
+=item JPG
 
-=item
+=item XBM
 
-JPG
+=item XPM
 
-=item
+=item PPM family (PPM/PGM/PBM)
 
-XBM
+=item PNG
 
-=item
+=item TIF
 
-XPM
+=item BMP
 
-=item
+=item PSD (Adobe PhotoShop)
 
-PPM family (PPM/PGM/PBM)
-
-=item
-
-PNG
-
-=item
-
-TIF
-
-=item
-
-BMP
+=item SWF (ShockWave/Flash)
 
 =back
 
