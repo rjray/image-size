@@ -33,7 +33,7 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION $NO_CACHE
 @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize $NO_CACHE $PCD_SCALE);
 %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-$revision    = q$Id: Size.pm,v 1.27 2001/11/20 23:38:01 rjray Exp $;
+$revision    = q$Id: Size.pm,v 1.28 2002/02/28 07:55:54 rjray Exp $;
 $VERSION     = "2.96";
 
 # This allows people to specifically request that the cache not be used
@@ -155,10 +155,10 @@ sub imgsize
     }
     else
     {
-        $stream = File::Spec->catfile(cwd(),$stream)
-            unless File::Spec->file_name_is_absolute($stream);
         unless ($NO_CACHE)
         {
+            $stream = File::Spec->catfile(cwd(),$stream)
+                unless File::Spec->file_name_is_absolute($stream);
             $mtime = (stat $stream)[9];
             if (-e "$stream" and exists $cache{$stream})
             {
@@ -269,7 +269,8 @@ Image::Size - read the dimensions of an image in several popular formats
 
     use Image::Size;
     # Get the size of an in-memory buffer
-    ($buf_x, $buf_y) = imgsize($buf);
+    ($buf_x, $buf_y) = imgsize(\$buf);
+    # Assuming that $buf was the data, imgsize() needed a reference to a scalar
 
 =head1 DESCRIPTION
 
@@ -497,7 +498,7 @@ and how to obtain it.
 
 =head1 AUTHORS
 
-Perl module interface by Randy J. Ray I<(rjray@tsoft.com)>, original
+Perl module interface by Randy J. Ray I<(rjray@blackperl.com)>, original
 image-sizing code by Alex Knowles I<(alex@ed.ac.uk)> and Andrew Tong
 I<(werdna@ugcs.caltech.edu)>, used with their joint permission.
 
@@ -698,7 +699,7 @@ sub pngsize
 # jpegsize: gets the width and height (in pixels) of a jpeg file
 # Andrew Tong, werdna@ugcs.caltech.edu           February 14, 1995
 # modified slightly by alex@ed.ac.uk
-# and further still by rjray@tsoft.com
+# and further still by rjray@blackperl.com
 # optimization and general re-write from tmetro@vl.com
 sub jpegsize
 {
