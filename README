@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.4 (See CHANGE HISTORY below)
+Version: 2.5 (See CHANGE HISTORY below)
 
 WHAT IS IT
 
@@ -9,8 +9,8 @@ script, a tool that analyzes HTML files and adds HEIGHT and WIDTH tags to
 IMG directives. Image::Size has generalized that code to return a raw (X, Y)
 pair, and included wrappers to pre-format that output into either HTML or a
 set of attribute pairs suitable for the CGI.pm library by Lincoln Stein.
-Currently, Image::Size can size images in XPM, XBM, GIF, JPEG, PNG and the
-PPM family of formats (PPM/PGM/PBM).
+Currently, Image::Size can size images in XPM, XBM, GIF, JPEG, PNG, the
+PPM family of formats (PPM/PGM/PBM), and TIFF.
 
 I did this because my WWW server generates a lot of documents on demand
 rather than keeping them in static files. These documents not only use
@@ -62,7 +62,7 @@ You may need super-user access to install.
 
 PROBLEMS/BUG REPORTS
 
-Please send any reports of problems or bugs to rjray@uswest.com. I wouldn't
+Please send any reports of problems or bugs to randy@byz.org. I wouldn't
 mind a short note to know that you're using this, just so I can justify its
 continued development to my manager :-). (In seriousness, a rough idea of
 how many others are using this will help promote its upkeep.)
@@ -70,12 +70,12 @@ how many others are using this will help promote its upkeep.)
 
 CREDITS AND LICENSES
 
-This package is copyright © 1996 by Randy Ray (rjray@uswest.com) and may be
+This package is copyright © 1996 by Randy Ray (randy@byz.org) and may be
 distributed under terms of the Artistic License used to cover Perl itself.
 See the file Artistic in the distribution of Perl 5.002 or later for details
 of copy and distribution terms.
 
-Perl module interface by Randy J. Ray (rjray@uswest.com), original
+Perl module interface by Randy J. Ray (randy@byz.org), original
 image-sizing code by Alex Knowles (alex@ed.ac.uk) and Andrew Tong
 (werdna@ugcs.caltech.edu), used with their joint permission.
 
@@ -83,18 +83,19 @@ Some bug fixes submitted by Bernd Leibing <bernd.leibing@rz.uni-ulm.de>.
 PPM/PGM/PBM sizing code contributed by Carsten Dominik
 <dominik@strw.LeidenUniv.nl>. Tom Metro <tmetro@vl.com> re-wrote the JPG and
 PNG code, and also provided a PNG image for the test suite. Dan Klein
-<dvk@lonewolf.com> contributed a re-write of the GIF code.
+<dvk@lonewolf.com> contributed a re-write of the GIF code. Cloyce Spradling
+<cloyce@headgear.org> contributed the TIFF sizing code and test images.
 A fix for reading binary data on PC-ish operating systems was contributed by
 Silas Dunsmore <silasd@psyber.com>.
 
 
 CHANGE HISTORY
 
-This is version 2.4:
+This is version 2.5:
 
-* Small bug in jpegsize, not returning the string 'JPG' as the third element
-  of the returned list. Figures I have a half-documented feature, and someone
-  actually uses it. :-)
+* Added support for TIFF images and two test cases. Many thanks to Cloyce
+  Spradling <cloyce@headgear.org> for both the code patches and the test
+  images.
 
 Initial version 1.0:
 
@@ -175,9 +176,16 @@ Changes in 2.2:
 * Cleaned up a new -w warning present in late versions of 5.003 (leading in
   to 5.004).
 
-Changes in 2.3
+Changes in 2.3:
 
 * Small fix to the regular expression in xpmsize.
 
 * Changed syntax of utilizing AutoLoader to conform to changes in upcoming
   5.004 release.
+
+Changes in 2.4:
+
+* Small bug in jpegsize, not returning the string 'JPG' as the third element
+  of the returned list. Figures I have a half-documented feature, and someone
+  actually uses it. :-)
+

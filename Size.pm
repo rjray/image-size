@@ -143,6 +143,10 @@ PPM family (PPM/PGM/PBM)
 
 PNG
 
+=item
+
+TIF
+
 =back
 
 When using the C<imgsize> interface, there is a third, unused value returned
@@ -188,7 +192,8 @@ Some bug fixes submitted by Bernd Leibing I<(bernd.leibing@rz.uni-ulm.de)>.
 PPM/PGM/PBM sizing code contributed by Carsten Dominik
 I<(dominik@strw.LeidenUniv.nl)>. Tom Metro I<(tmetro@vl.com)> re-wrote the JPG
 and PNG code, and also provided a PNG image for the test suite. Dan Klein
-I<(dvk@lonewolf.com)> contributed a re-write of the GIF code.
+I<(dvk@lonewolf.com)> contributed a re-write of the GIF code.  Cloyce Spradling
+I<(cloyce@headgear.org)> contributed TIFF sizing code and test images.
 
 =cut
 
@@ -205,8 +210,8 @@ use vars qw($revision $VERSION $read_in $last_pos);
 @Image::Size::EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %Image::Size::EXPORT_TAGS = (q/all/ => [@Image::Size::EXPORT_OK]);
 
-$Image::Size::revision    = q$Id: Size.pm,v 1.7 1997/09/02 19:32:02 rjray Exp $;
-$Image::Size::VERSION     = "2.4";
+$Image::Size::revision    = q$Id: Size.pm,v 1.8 1997/12/25 01:11:48 randyr Exp $;
+$Image::Size::VERSION     = "2.5";
 
 # Enable direct use of AutoLoader's AUTOLOAD function:
 *Image::Size::AUTOLOAD = \&AutoLoader::AUTOLOAD;
@@ -221,7 +226,9 @@ my %type_map = ( 'GIF8[7,9]a'              => 'gifsize',
                  "\x89PNG\x0d\x0a\x1a\x0a" => 'pngsize',
                  "^P[1-6]\n"               => 'ppmsize',
                  '\#define\s+\S+\s+\d+'    => 'xbmsize',
-                 '\/\* XPM \*\/'           => 'xpmsize' );
+                 '\/\* XPM \*\/'           => 'xpmsize',
+                 'MM\x00\x2a'              => 'tiffsize',
+                 'II\x2a\x00'              => 'tiffsize' );
 
 #
 # These are lexically-scoped anonymous subroutines for reading the three
@@ -329,7 +336,7 @@ sub imgsize
     # the grep() below matches the data to one of the known types, then the
     # called subroutine will override these...
     #
-    $id = "Data stream is not gif, xbm, xpm, jpeg, png, ppm, pgm or pbm";
+    $id = "Data stream is not gif, xbm, xpm, jpeg, png, ppm, pgm, pbm, or tiff";
     $x  = undef;
     $y  = undef;
 
@@ -638,6 +645,79 @@ sub ppmsize
     $id = "PBM" if $n eq "P1" || $n eq "P4";
     $id = "PGM" if $n eq "P2" || $n eq "P5";
     $id = "PPM" if $n eq "P3" || $n eq "P6";
+
+    ($x, $y, $id);
+}
+
+# tiffsize: size a TIFF image
+#
+# Contributed by Cloyce Spradling <cloyce@headgear.org>
+sub tiffsize {
+    my $stream = shift;
+
+    my ($x, $y, $id) = (undef, undef, "Unable to determine size of TIFF data");
+
+    my $endian = 'n';		# Default to big-endian; I like it better
+    my $header = &$read_in($stream, 4);
+    $endian = 'v' if ($header =~ /II\x2a\x00/o); # little-endian
+
+    # Set up an association between data types and their corresponding
+    # pack/unpack specification.  Don't take any special pains to deal with
+    # signed numbers; treat them as unsigned because none of the image
+    # dimensions should ever be negative.  (I hope.)
+    my @packspec = ( undef,	# nothing (shouldn't happen)
+		     'C',	# BYTE (8-bit unsigned integer)
+		     undef,	# ASCII
+		     $endian,	# SHORT (16-bit unsigned integer)
+		     uc($endian), # LONG (32-bit unsigned integer)
+		     undef,	# RATIONAL
+		     'c',	# SBYTE (8-bit signed integer)
+		     undef,	# UNDEFINED
+		     $endian,	# SSHORT (16-bit unsigned integer)
+		     uc($endian), # SLONG (32-bit unsigned integer)
+		     );
+
+    my $offset = &$read_in($stream, 4, 4); # Get offset to IFD
+    $offset = unpack(uc($endian), $offset); # Fix it so we can use it
+
+    my $ifd = &$read_in($stream, 2, $offset); # Get number of directory entries
+    my $num_dirent = unpack($endian, $ifd); # Make it useful
+    $offset += 2;
+    $num_dirent = $offset + ($num_dirent * 12);	# Calc. maximum offset of IFD
+
+    # Do all the work
+    $ifd = '';
+    my $tag = 0;
+    my $type = 0;
+    while (!defined($x) || !defined($y)) {
+	$ifd = &$read_in($stream, 12, $offset); # Get first directory entry
+	last if (($ifd eq '') || ($offset > $num_dirent));
+	$offset += 12;
+	$tag = unpack($endian, $ifd); # ...and decode its tag
+	$type = unpack($endian, substr($ifd, 2, 2)); # ...and the data type
+	# Check the type for sanity.
+	next if (($type > @packspec+0) || (!defined($packspec[$type])));
+	if ($tag == 0x0100) {	# ImageWidth (x)
+	    # Decode the value
+	    $x = unpack($packspec[$type], substr($ifd, 8, 4));
+	} elsif ($tag == 0x0101) {	# ImageLength (y)
+	    # Decode the value
+	    $y = unpack($packspec[$type], substr($ifd, 8, 4));
+	}
+    }
+
+    # Decide if we were successful or not
+    if (defined($x) && defined($y)) {
+	$id = 'TIF';
+    } else {
+	$id = '';
+	$id = 'ImageWidth ' if (!defined($x));
+	if (!defined ($y)) {
+	    $id .= 'and ' if ($id ne '');
+	    $id .= 'ImageLength ';
+	}
+	$id .= 'tag(s) could not be found';
+    }
 
     ($x, $y, $id);
 }

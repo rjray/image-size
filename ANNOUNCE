@@ -1,16 +1,15 @@
-Version 2.4 of Image::Size has been uploaded to PAUSE, and will propagate
+Version 2.5 of Image::Size has been uploaded to PAUSE, and will propagate
 to all CPAN sites over the next few days.
 
 To build and install, you will need perl 5.002 or later, and sufficient
 access to install an extension.
 
-Summary of Changes in 2.4:
+Summary of Changes in 2.5:
 
-* Small bug in jpegsize, not returning the string 'JPG' as the third element
-  of the returned list. Figures I have a half-documented feature, and someone
-  actually uses it. :-)
+* Added support for TIFF images, thanks to Cloyce Spradling for the patches
+  and test images.
 
-From the README file for 2.4:
+From the README file for 2.5:
 
 Image::Size is a library based on the image-sizing code in the wwwimagesize
 script, a tool that analyzes HTML files and adds HEIGHT and WIDTH tags to
@@ -30,17 +29,17 @@ that as part of the generated HTML. Or for any other utility that uses and
 manipulates graphics. The idea of the basic interface + wrappers is to not
 limit the programmer to a certain data format.
 
-Please send any reports of problems or bugs to rjray@uswest.com. I wouldn't
+Please send any reports of problems or bugs to randy@byz.org. I wouldn't
 mind a short note to know that you're using this, just so I can justify its
 continued development to my manager :-). (In seriousness, a rough idea of
 how many others are using this will help promote its upkeep.)
 
-This package is copyright © 1996 by Randy Ray (rjray@uswest.com) and is
-placed in the public domain under terms of the Artistic License used to
+This package is copyright (c) 1997 by Randy Ray (randy@byz.org) and is
+made available to the Perl public under terms of the Artistic License used to
 cover Perl itself. See the file Artistic in the distribution  of Perl 5.002 or
 later for details of copy and distribution terms.
 
-Perl module interface by Randy J. Ray (rjray@uswest.com), original
+Perl module interface by Randy J. Ray (randy@byz.org), original
 image-sizing code by Alex Knowles (alex@ed.ac.uk) and Andrew Tong
 (werdna@ugcs.caltech.edu), used with their joint permission.
 
@@ -48,6 +47,7 @@ Some bug fixes submitted by Bernd Leibing <bernd.leibing@rz.uni-ulm.de>.
 PPM/PGM/PBM sizing code contributed by Carsten Dominik
 <dominik@strw.LeidenUniv.nl>. Tom Metro <tmetro@vl.com> re-wrote the JPG and
 PNG code, and also provided a PNG image for the test suite. Dan Klein
-<dvk@lonewolf.com> contributed a re-write of the GIF code.
+<dvk@lonewolf.com> contributed a re-write of the GIF code. Cloyce Spradling
+<cloyce@headgear.org> contributed the TIFF sizing code and test images.
 A fix for reading binary data on PC-ish operating systems was contributed by
 Silas Dunsmore <silasd@psyber.com>.
