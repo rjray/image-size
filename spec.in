@@ -1,5 +1,5 @@
 Summary: Perl library to extract image dimensions from various formats
-Name: ${NAME}
+Name: perl-${DISTNAME}
 Version: ${VERSION}
 Release: ${RELEASE}
 Epoch: 1
@@ -7,10 +7,10 @@ Vendor: Randy J. Ray
 Copyright: Artistic
 Group: Applications/CPAN
 Source: ${DISTNAME}-${VERSION}.tar.gz
-Url: http://www.blackperl.com/Image::Size
+Url: http://www.blackperl.com/${NAME}
 BuildRequires: perl >= 0:5.00503
 Requires: perl >= 0:5.00503
-Provides: Image::Size = ${VERSION}
+Provides: perl-${DISTNAME} = ${VERSION}
 BuildRoot: %{_tmppath}/%{name}-root
 BuildArch: noarch
 
