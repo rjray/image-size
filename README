@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.2 (See CHANGE HISTORY below)
+Version: 2.3 (See CHANGE HISTORY below)
 
 WHAT IS IT
 
@@ -90,13 +90,12 @@ Silas Dunsmore <silasd@psyber.com>.
 
 CHANGE HISTORY
 
-This is version 2.2:
+This is version 2.3:
 
-* Added calls to binmode on filehandles, for the sake of OS flavors such as
-  OS/2, etc.
+* Small fix to the regular expression in xpmsize.
 
-* Cleaned up a new -w warning present in late versions of 5.003 (leading in
-  to 5.004).
+* Changed syntax of utilizing AutoLoader to conform to changes in upcoming
+  5.004 release.
 
 Initial version 1.0:
 
@@ -168,3 +167,11 @@ Changes in 2.1:
 * Added in changes to the error handling that were meant for 2.0.
 
 * Fixed a bug in attr_imgsize caused by the new return format.
+
+Changes in 2.2:
+
+* Added calls to binmode on filehandles, for the sake of OS flavors such as
+  OS/2, etc.
+
+* Cleaned up a new -w warning present in late versions of 5.003 (leading in
+  to 5.004).
