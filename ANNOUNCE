@@ -4,20 +4,23 @@ to all CPAN sites over the next few days.
 To build and install, you will need perl 5.002 or later, and sufficient
 access to install an extension.
 
-Summary of Changes in 2.5:
+Summary of Changes in 2.6:
 
-* Added support for TIFF images, thanks to Cloyce Spradling for the patches
-  and test images.
+* 2.5 did not actually deliver the tests for the new TIFF code. Oops.
 
-From the README file for 2.5:
+* Found some variations of the formats of XPM and XBM that were not
+  compatible with the regex's being used. Tricky, flexible little devils,
+  especially XPM.
+
+From the README file for 2.6:
 
 Image::Size is a library based on the image-sizing code in the wwwimagesize
 script, a tool that analyzes HTML files and adds HEIGHT and WIDTH tags to
 IMG directives. Image::Size has generalized that code to return a raw (X, Y)
 pair, and included wrappers to pre-format that output into either HTML or a
 set of attribute pairs suitable for the CGI.pm library by Lincoln Stein.
-Currently, Image::Size can size images in XPM, XBM, GIF, JPEG, PNG and the
-PPM family of formats (PPM/PGM/PBM).
+Currently, Image::Size can size images in XPM, XBM, GIF, JPEG, TIFF, PNG and
+the PPM family of formats (PPM/PGM/PBM).
 
 I did this because my WWW server generates a lot of documents on demand
 rather than keeping them in static files. These documents not only use
@@ -34,7 +37,7 @@ mind a short note to know that you're using this, just so I can justify its
 continued development to my manager :-). (In seriousness, a rough idea of
 how many others are using this will help promote its upkeep.)
 
-This package is copyright (c) 1997 by Randy Ray (randy@byz.org) and is
+This package is copyright (c) 1998 by Randy Ray (randy@byz.org) and is
 made available to the Perl public under terms of the Artistic License used to
 cover Perl itself. See the file Artistic in the distribution  of Perl 5.002 or
 later for details of copy and distribution terms.

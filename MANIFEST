@@ -1,7 +1,7 @@
 MANIFEST				This file
 Makefile.PL				MM template
 README					Description and details
-Size.pm					v1.1
+Size.pm					v2.6
 imgsize.PL				Utility script template (front-end)
 t/all.t					test suite
 t/letter_T.jpg				Support files for tests

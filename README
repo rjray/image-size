@@ -1,16 +1,16 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.5 (See CHANGE HISTORY below)
+Version: 2.6 (See CHANGE HISTORY below)
 
 WHAT IS IT
 
 Image::Size is a library based on the image-sizing code in the wwwimagesize
 script, a tool that analyzes HTML files and adds HEIGHT and WIDTH tags to
 IMG directives. Image::Size has generalized that code to return a raw (X, Y)
-pair, and included wrappers to pre-format that output into either HTML or a
-set of attribute pairs suitable for the CGI.pm library by Lincoln Stein.
-Currently, Image::Size can size images in XPM, XBM, GIF, JPEG, PNG, the
-PPM family of formats (PPM/PGM/PBM), and TIFF.
+pair, and included wrappers to pre-format that output into either HTML or
+a set of attribute pairs suitable for the CGI.pm library by Lincoln Stein.
+Currently, Image::Size can size images in XPM, XBM, GIF, JPEG, PNG, TIFF
+and the PPM family of formats (PPM/PGM/PBM).
 
 I did this because my WWW server generates a lot of documents on demand
 rather than keeping them in static files. These documents not only use
@@ -91,11 +91,13 @@ Silas Dunsmore <silasd@psyber.com>.
 
 CHANGE HISTORY
 
-This is version 2.5:
+This is version 2.6:
 
-* Added support for TIFF images and two test cases. Many thanks to Cloyce
-  Spradling <cloyce@headgear.org> for both the code patches and the test
-  images.
+* 2.5 did not actually deliver the tests for the new TIFF code. Oops.
+
+* Found some variations of the formats of XPM and XBM that were not
+  compatible with the regex's being used. Tricky, flexible little devils,
+  especially XPM.
 
 Initial version 1.0:
 
@@ -189,3 +191,8 @@ Changes in 2.4:
   of the returned list. Figures I have a half-documented feature, and someone
   actually uses it. :-)
 
+Changes in 2.5:
+
+* Added support for TIFF images and two test cases. Many thanks to Cloyce
+  Spradling <cloyce@headgear.org> for both the code patches and the test
+  images.
