@@ -210,7 +210,7 @@ use vars qw($revision $VERSION $read_in $last_pos);
 @Image::Size::EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %Image::Size::EXPORT_TAGS = (q/all/ => [@Image::Size::EXPORT_OK]);
 
-$Image::Size::revision    = q$Id: Size.pm,v 1.9 1998/01/24 21:25:44 rjray Exp $;
+$Image::Size::revision    = q$Id: Size.pm,v 1.10 1998/01/25 06:35:03 rjray Exp $;
 $Image::Size::VERSION     = "2.6";
 
 # Enable direct use of AutoLoader's AUTOLOAD function:
@@ -538,7 +538,7 @@ sub xpmsize
 
     while ($line = &$read_in($stream, 1024))
     {
-        next unless ($line =~ /"\s*(\d+)\s+(\d+)(\s+\d+\s+\d+){1,2}"/mo);
+        next unless ($line =~ /"\s*(\d+)\s+(\d+)(\s+\d+\s+\d+){1,2}\s*"/mo);
         ($x, $y) = ($1, $2);
         $id = 'XPM';
         last;
