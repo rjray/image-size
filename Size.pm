@@ -36,7 +36,7 @@ BEGIN
     @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize $NO_CACHE $PCD_SCALE);
     %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-    $revision = q$Id: Size.pm,v 1.32 2002/05/04 08:23:29 rjray Exp $;
+    $revision = q$Id: Size.pm,v 1.33 2003/01/03 08:56:24 rjray Exp $;
     $VERSION = "2.99";
 
     # Check if we have Image::Magick available
@@ -161,7 +161,7 @@ sub imgsize
     {
         $handle = $stream;
         $read_in = $read_buf;
-        $header = substr($$handle, 0, 256);
+        $header = substr(($$handle || ''), 0, 256);
     }
     elsif (ref $stream)
     {
