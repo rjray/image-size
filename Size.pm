@@ -5,6 +5,9 @@
 # Minor changes (removed setting of globals) to imgsize() and structuring into
 # Perl5 package form by rjray@uswest.com.
 #
+# Release 1.1:
+#   Fixed bug in jpegsize
+#   Clarified some comments and docs
 # Up to release 1.0:
 #   Turned sizing into a library
 #   Added two wrappers to pre-format size into HTML or CGI attributes
@@ -51,19 +54,19 @@ B<Image::Size> provides three interfaces for possible import:
 
 =over
 
-=item &imgsize(file)
+=item imgsize(file)
 
 Returns a two-item list of the X and Y dimensions (height and width, in
 that order) of I<file>. Errors are noted by a -1 value for the first element,
 and an error string for the second.
 
-=item &html_imgsize(file)
+=item html_imgsize(file)
 
 Returns the height and width (X and Y) of I<file> pre-formatted as a single
 string C<"HEIGHT=X WIDTH=Y"> suitable for addition into generated HTML IMG
 tags.
 
-=item &attr_imgsize(file)
+=item attr_imgsize(file)
 
 Returns the height and width of I<file> as part of a 4-element list useful
 for routines that use hash tables for the manipulation of named parameters,
@@ -96,6 +99,11 @@ are: JPEG, JPG, GIF, PNG, XBM and XPM.
 I have no PNG-format files on which to test the PNG sizing. I can only
 trust that it works.
 
+This will reliably work on perl 5.002 or newer. Perl versions prior to
+5.003 do not have the B<IO::File> module by default, which this module
+requires. You will have to retrieve and install it, or upgrade to 5.003,
+in which it is included as part of the core.
+
 =head1 SEE ALSO
 
 C<http://www.tardis.ed.ac.uk/~ark/wwwis/> for a description of C<wwwis>
@@ -115,14 +123,15 @@ use strict;
 use IO::File;
 use AutoLoader;
 use Exporter;
-use vars qw($VERSION); # Defeat "used only once" warning
+use vars qw($revision $VERSION); # Defeat "used only once" warnings
 
 @Image::Size::ISA         = qw(Exporter AutoLoader);
 @Image::Size::EXPORT      = qw(imgsize);
 @Image::Size::EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %Image::Size::EXPORT_TAGS = (q/all/ => [@Image::Size::EXPORT_OK]);
 
-$Image::Size::VERSION     = "1.0";
+$Image::Size::revision    = q/$Id: Size.pm,v 1.2 1996/09/04 21:18:52 rjray Exp $/;
+$Image::Size::VERSION     = "1.1";
 
 # Package lexical - invisible to outside world, used only in imgsize
 my %_cache = ();
@@ -310,12 +319,13 @@ sub pngsize
 # jpegsize : gets the width and height (in pixels) of a jpeg file
 # Andrew Tong, werdna@ugcs.caltech.edu           February 14, 1995
 # modified slightly by alex@ed.ac.uk
+# and further still by rjray@uswest.com
 sub jpegsize
 {
     my ($JPEG) = @_;
     my ($done) = 0;
     my ($x, $y);
-    my ($ch, $c1, $c2, $a, $b, $c, $d, $s, $done, $junk, $length);
+    my ($ch, $c1, $c2, $a, $b, $c, $d, $s, $junk, $length);
     
     # Get rid of "Use of unitialized value..." carping
     $c1 = $c2 = $ch = $s = $length = $junk = 0;
@@ -338,14 +348,14 @@ sub jpegsize
         {
             read($JPEG, $junk, 3); read($JPEG, $s, 4);
             ($a, $b, $c, $d) = unpack("C"x4, $s);
-            $x = $a<<8|$b;
-            $y = $c<<8|$d;
+            $y = $a<<8|$b;
+            $x = $c<<8|$d;
             $done = 1;
         } else {
             # We **MUST** skip variables, since FF's within variable names are
             # NOT valid JPEG markers
             read($JPEG, $s, 2); 
-            ($c1, $c2) = unpack("C"x2,$s); 
+            ($c1, $c2) = unpack("C"x2, $s);
             $length = $c1<<8|$c2;
             if ($length < 2)
             {
