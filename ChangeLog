@@ -1,5 +1,10 @@
 CHANGE HISTORY
 
+Changes in 2.99:
+
+* Applied two patches from Ville Skyttä <ville.skytta@iki.fi>, one providing
+  support for MNG, the other for supporting anything Image::Magick does.
+
 Changes in 2.98:
 
 * From tips provided by Philip Newton after a close reading of the manual page

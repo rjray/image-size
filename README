@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.98 (See CHANGES below)
+Version: 2.99 (See CHANGES below)
 
 WHAT IS IT
 
@@ -9,8 +9,9 @@ script, a tool that analyzes HTML files and adds HEIGHT and WIDTH tags to
 IMG directives. Image::Size has generalized that code to return a raw (X, Y)
 pair, and included wrappers to pre-format that output into either HTML or
 a set of attribute pairs suitable for the CGI.pm library by Lincoln Stein.
-Currently, Image::Size can size images in XPM, XBM, GIF, JPEG, PNG, TIFF
-and the PPM family of formats (PPM/PGM/PBM).
+Currently, Image::Size can size images in XPM, XBM, GIF, JPEG, PNG, MNG, TIFF,
+the PPM family of formats (PPM/PGM/PBM) and if Image::Magick is installed,
+the formats supported by it.
 
 I did this because my old WWW server generated a lot of documents on demand
 rather than keeping them in static files. These documents not only used
@@ -73,8 +74,7 @@ Please send any reports of problems or bugs to rjray@blackperl.com.
 
 CHANGES
 
-This is version 2.98:
+This is version 2.99:
 
-* From tips provided by Philip Newton after a close reading of the manual page
-  and other docs, several typos and errors were cleared out, and a small
-  buglet in the error message within bmpsize() was corrected.
+Two patches applied, both provided by Ville Skyttä <ville.skytta@iki.fi>,
+adding support for MNG and Image::Magick.
