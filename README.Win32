@@ -10,7 +10,7 @@ utility, follow these steps:
 
 1.	Edit the file Size.pm with your preferred plain text editor.
 
-2.	Find the line that reads "use AutoLoader;" and delete it.
+2.	Find the line that starts with "use AutoLoader" and delete it.
 
 3.	Next, find the line that reads "__END__" and delete it.
 
@@ -33,3 +33,8 @@ process the various image formats. Instead, all code is loaded and compiled
 initially.
 
 Randy
+
+Note: Fri Mar  1 23:36:58 PST 2002
+
+Updated the search string in step #2, as that line had changed slightly several
+releases back.
