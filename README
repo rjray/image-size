@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.3 (See CHANGE HISTORY below)
+Version: 2.4 (See CHANGE HISTORY below)
 
 WHAT IS IT
 
@@ -90,12 +90,11 @@ Silas Dunsmore <silasd@psyber.com>.
 
 CHANGE HISTORY
 
-This is version 2.3:
+This is version 2.4:
 
-* Small fix to the regular expression in xpmsize.
-
-* Changed syntax of utilizing AutoLoader to conform to changes in upcoming
-  5.004 release.
+* Small bug in jpegsize, not returning the string 'JPG' as the third element
+  of the returned list. Figures I have a half-documented feature, and someone
+  actually uses it. :-)
 
 Initial version 1.0:
 
@@ -175,3 +174,10 @@ Changes in 2.2:
 
 * Cleaned up a new -w warning present in late versions of 5.003 (leading in
   to 5.004).
+
+Changes in 2.3
+
+* Small fix to the regular expression in xpmsize.
+
+* Changed syntax of utilizing AutoLoader to conform to changes in upcoming
+  5.004 release.

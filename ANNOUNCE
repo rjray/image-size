@@ -1,17 +1,16 @@
-Version 2.3 of Image::Size has been uploaded to PAUSE, and will propagate
+Version 2.4 of Image::Size has been uploaded to PAUSE, and will propagate
 to all CPAN sites over the next few days.
 
 To build and install, you will need perl 5.002 or later, and sufficient
 access to install an extension.
 
-Summary of Changes in 2.3:
+Summary of Changes in 2.4:
 
-* Small fix to the regular expression in xpmsize.
+* Small bug in jpegsize, not returning the string 'JPG' as the third element
+  of the returned list. Figures I have a half-documented feature, and someone
+  actually uses it. :-)
 
-* Changed syntax of utilizing AutoLoader to conform to changes in upcoming
-  5.004 release.
-
-From the README file for 2.3:
+From the README file for 2.4:
 
 Image::Size is a library based on the image-sizing code in the wwwimagesize
 script, a tool that analyzes HTML files and adds HEIGHT and WIDTH tags to
