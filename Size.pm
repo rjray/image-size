@@ -33,8 +33,8 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION
 @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %EXPORT_TAGS = ('all' => [@EXPORT_OK]);
 
-$revision    = q$Id: Size.pm,v 1.21 2000/12/08 08:21:43 rjray Exp $;
-$VERSION     = "2.91";
+$revision    = q$Id: Size.pm,v 1.22 2001/03/11 22:49:41 rjray Exp $;
+$VERSION     = "2.92";
 
 # Package lexicals - invisible to outside world, used only in imgsize
 #
@@ -103,6 +103,8 @@ sub imgsize
     my ($x, $y, $id, $mtime, @list);
     # These only used if $stream is an existant open FH
     my ($save_pos, $need_restore) = (0, 0);
+    # This is for when $stream is a locally-opened file
+    my $need_close = 0;
 
     $header = '';
 
@@ -140,8 +142,8 @@ sub imgsize
     }
     else
     {
-        #$stream = cwd . "/$stream" unless ($stream =~ m|^/|);
-        $stream = File::Spec->catfile(cwd(),$stream) unless File::Spec->file_name_is_absolute($stream);
+        $stream = File::Spec->catfile(cwd(),$stream)
+            unless File::Spec->file_name_is_absolute($stream);
         $mtime = (stat $stream)[9];
         if (-e "$stream" and exists $cache{$stream})
         {
@@ -158,6 +160,7 @@ sub imgsize
         open($handle, "< $stream") or
             return (undef, undef, "Can't open image file $stream: $!");
 
+        $need_close = 1;
         # assist dain-bramaged operating systems -- SWD
         binmode($handle);
         read $handle, $header, 256;
@@ -189,7 +192,9 @@ sub imgsize
     # If we were passed an existant file handle, we need to restore the
     # old filepos:
     #
-    seek($handle, $save_pos, 0) if ($need_restore);
+    seek($handle, $save_pos, 0) if $need_restore;
+    # ...and if we opened the file ourselves, we need to close it
+    close($handle) if $need_close;
 
     # results:
     return (wantarray) ? ($x, $y, $id) : ();
