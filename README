@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 1.0 (See CHANGE HISTORY below)
+Version: 1.1 (See CHANGE HISTORY below)
 
 WHAT IS IT
 
@@ -102,3 +102,10 @@ initial release are:
 
 * Added the XPM sizing myself, though I have yet to use it (I do test it in
   the test suite, though).
+
+Changes in 1.1:
+
+* Added a small, simple script called "imgsize" that gives command-line access
+  to the library functionality.
+
+* Discovered and fixed bug in sizing JPEGs.
