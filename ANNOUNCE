@@ -1,16 +1,34 @@
-Version 2.8 of Image::Size has been uploaded to PAUSE, and will propagate
-to all CPAN sites over the next few days.
+Version 2.9 of Image::Size has been uploaded to PAUSE, and will propagate
+to all CPAN sites over the next few days. Most important is a fix to a
+byte-order problem in the BMP support added in 2.8.
 
 To build and install, you will need perl 5.002 or later, and sufficient
 access to install an extension.
 
-Summary of Changes in 2.8:
+Summary of Changes in 2.9:
 
-* Added support for BMP-format files. CR/LF translation between UNIX and
-  Windows machines should not affect this, but please let me know if there
-  are problems.
+* Support for BMP format in 2.8 was marred by a byte-ordering problem not
+  found in testing since my Linux and Windows machines are both Intel-based.
+  Sorry.
 
-From the README file for 2.8:
+* Added a contributed fix for a recurring problem with GIF87a images that
+  have descriptors similar to GIF89a.
+
+* Added a contributed fix to the PPM matching (prior to actual selection for
+  sizing) that was caused by some Win32 versions of Perl not handling "\n"
+  natively.
+
+* While at that last one, I made an attempt to fix any MacOS concerns that
+  may be triggered by the same consideration.
+
+* Added better error handling to the imgsize script and added a little more
+  to the manual page.
+
+From the README file for 2.9:
+
+NOTE: Version 2.9 fixes a bug in the newly-added BMP support from 2.8. The
+      2.8 files will be marked for deletion from CPAN. Use this version,
+      instead.
 
 Image::Size is a library based on the image-sizing code in the wwwimagesize
 script, a tool that analyzes HTML files and adds HEIGHT and WIDTH tags to
@@ -43,10 +61,13 @@ image-sizing code by Alex Knowles (alex@ed.ac.uk) and Andrew Tong
 
 Some bug fixes submitted by Bernd Leibing <bernd.leibing@rz.uni-ulm.de>.
 PPM/PGM/PBM sizing code contributed by Carsten Dominik
-<dominik@strw.LeidenUniv.nl>. Tom Metro <tmetro@vl.com> re-wrote the JPG and
-PNG code, and also provided a PNG image for the test suite. Dan Klein
+<dominik@strw.LeidenUniv.nl>. Tom Metro <tmetro@vl.com> re-wrote the JPG
+and PNG code, and also provided a PNG image for the test suite. Dan Klein
 <dvk@lonewolf.com> contributed a re-write of the GIF code. Cloyce Spradling
 <cloyce@headgear.org> contributed the TIFF sizing code and test images.
 A fix for reading binary data on PC-ish operating systems was contributed by
 Silas Dunsmore <silasd@psyber.com>. Aldo Calpini <a.calpini@romagiubileo.it>
 sent in code that was easily adapted to support BMP images (Windows bitmaps).
+Fix for a recurring problem with GIF87a files contributed by Matthias Schmitt
+<matthias.schmitt@mmp.lu>. Fix for problems with PPM formats on some Win32
+versions was contributed by Randy Kobes <randy@theory.uwinnipeg.ca>.
