@@ -4,8 +4,10 @@ README					Description and details
 Size.pm					v1.1
 imgsize.PL				Utility script template (front-end)
 t/all.t					test suite
-t/chalk.jpg				Support files for tests
+t/letter_T.jpg				Support files for tests
 t/dave.jpg
-t/home.gif
+t/test.gif
 t/spacer50.xbm
 t/xterm.xpm
+t/pass-1_s.png
+t/letter_N.ppm
