@@ -11,8 +11,7 @@ WriteMakefile(NAME         => 'Image::Size',
               PREREQ_PM    => { File::Spec => 0 },
               EXE_FILES    => ['imgsize'],
               clean        => { FILES =>
-                                'Image-Size-* Image-Size.spec ' .
-                                '*.rpm rpmrc rpmmacro' },
+                                'Image-Size-* *.spec *.rpm rpmrc rpmmacro' },
               VERSION_FROM => 'Size.pm');
 
 sub MY::tools_other
@@ -28,7 +27,7 @@ sub MY::post_constants
 {
     my $self = shift;
 
-    "SPECFILE=$self->{DISTNAME}.spec";
+    "SPECFILE=perl-$self->{DISTNAME}.spec";
 }
 
 sub MY::postamble
@@ -40,15 +39,15 @@ sub MY::postamble
     #
     # Generate the spec file from <DATA> with substitutions
     #
-    print "Generating $self->{DISTNAME}.spec...\n";
+    print "Generating perl-$self->{DISTNAME}.spec...\n";
     $self->{RELEASE} = 1 unless $self->{RELEASE};
     $self->{INSTALLDIR} = $Config{installsitelib} unless $self->{INSTALLDIR};
-    open(SPECI, "< $self->{DISTNAME}.spec.in");
+    open(SPECI, "< spec.in");
     if ($?)
     {
         die "Error opening template spec file: $!, stopped";
     }
-    open(SPECO, "> $self->{DISTNAME}.spec");
+    open(SPECO, "> perl-$self->{DISTNAME}.spec");
     if ($?)
     {
         die "Error creating output spec file: $!, stopped";
