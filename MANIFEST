@@ -1,7 +1,8 @@
 MANIFEST				This file
 Makefile.PL				MM template
 README					Description and details
-Size.pm					v1.0
+Size.pm					v1.1
+imgsize					Utility script (front-end)
 t/all.t					test suite
 t/chalk.jpg				Support files for tests
 t/dave.jpg
