@@ -4,7 +4,7 @@ Makefile.PL				MM template
 README					Description and details
 README.Win32				Special considerations for Win NT/95/98
 Size.pm					the code
-imgsize.PL				Utility script template (front-end)
+imgsize   				Utility script
 t/all.t					test suite
 t/letter_T.jpg				Support files for tests
 t/pak38.jpg
