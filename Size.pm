@@ -205,8 +205,8 @@ use vars qw($revision $VERSION $read_in $last_pos);
 @Image::Size::EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %Image::Size::EXPORT_TAGS = (q/all/ => [@Image::Size::EXPORT_OK]);
 
-$Image::Size::revision    = q$Id: Size.pm,v 1.6 1997/04/21 18:30:30 rjray Exp $;
-$Image::Size::VERSION     = "2.3";
+$Image::Size::revision    = q$Id: Size.pm,v 1.7 1997/09/02 19:32:02 rjray Exp $;
+$Image::Size::VERSION     = "2.4";
 
 # Enable direct use of AutoLoader's AUTOLOAD function:
 *Image::Size::AUTOLOAD = \&AutoLoader::AUTOLOAD;
@@ -606,6 +606,7 @@ sub jpegsize
             # Segments that contain size info
             $length = 5;
             ($y, $x) = unpack("xnn", &$read_in($stream, $length));
+            $id = 'JPG';
             last;
         }
         else
