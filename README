@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.904 (See CHANGES below)
+Version: 2.91 (See CHANGES below)
 
 WHAT IS IT
 
@@ -73,9 +73,10 @@ Please send any reports of problems or bugs to rjray@tsoft.com.
 
 CHANGES
 
-This is version 2.904:
+This is version 2.91:
 
-* Added a PREREQ_PM clause in Makefile.PL for systems that do not (yet) have
-  File::Spec installed.
+* Added copyright notices (freely distributable under Perl's Artistic License)
+  to Size.pm and imgsize, at the request of Debian folks.
 
-* Experimental (untested, no test cases) PSD support.
+* No longer any need for imgsize.PL as a self-extractor; MakeMaker now handles
+  that fine (has for a while).
