@@ -1,8 +1,17 @@
-Version 1.1 of Image::Size has been uploaded to PAUSE, and will propagate
+Version 1.2 of Image::Size has been uploaded to PAUSE, and will propagate
 to all CPAN sites over the next few days.
 
 To build and install, you will need perl 5.002 or later, and sufficient
 access to install an extension.
+
+Summary of Changes in 1.2:
+
+Two fixes given to me by Bernd Leibing <bernd.leibing@rz.uni-ulm.de>:
+
+* Fixed bug caused by perl quoting and RCS in Size.pm
+
+* imgsize now comes as imgsize.PL and is auto-extracted as part of the make,
+  utilizing your system's configuration to create the start-up #! line.
 
 Summary of Changes in 1.1:
 

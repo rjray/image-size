@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 1.1 (See CHANGE HISTORY below)
+Version: 1.2 (See CHANGE HISTORY below)
 
 WHAT IS IT
 
@@ -78,6 +78,8 @@ Perl module interface by Randy J. Ray (rjray@uswest.com), original
 image-sizing code by Alex Knowles (alex@ed.ac.uk) and Andrew Tong
 (werdna@ugcs.caltech.edu), used with their joint permission.
 
+Some bug fixes submtted by Bernd Leibing <bernd.leibing@rz.uni-ulm.de>.
+
 
 CHANGE HISTORY
 
@@ -109,3 +111,13 @@ Changes in 1.1:
   to the library functionality.
 
 * Discovered and fixed bug in sizing JPEGs.
+
+Changes in 1.2:
+
+Two fixes given to me by Bernd Leibing <bernd.leibing@rz.uni-ulm.de>:
+
+* Fixed bug caused by perl quoting and RCS in Size.pm
+
+* imgsize now comes as imgsize.PL and is auto-extracted as part of the make,
+  utilizing your system's configuration to create the start-up #! line.
+
