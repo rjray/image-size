@@ -1,5 +1,12 @@
 ###############################################################################
 #
+# This file copyright (c) 2000 by Randy J. Ray, all rights reserved
+#
+# Copying and distribution are permitted under the terms of the Artistic
+# License as distributed with Perl versions 5.005 and later.
+#
+###############################################################################
+#
 # Once upon a time, this code was lifted almost verbatim from wwwis by Alex
 # Knowles, alex@ed.ac.uk. Since then, even I barely recognize it. It has
 # contributions, fixes, additions and enhancements from all over the world.
@@ -26,7 +33,7 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION
 @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %EXPORT_TAGS = ('all' => [@EXPORT_OK]);
 
-$revision    = q$Id: Size.pm,v 1.19 2000/11/28 08:09:47 rjray Exp $;
+$revision    = q$Id: Size.pm,v 1.20 2000/12/08 08:20:34 rjray Exp $;
 $VERSION     = "2.904";
 
 # Package lexicals - invisible to outside world, used only in imgsize
