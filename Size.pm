@@ -1,9 +1,8 @@
 ###############################################################################
 #
-# This code lifted almost verbatim from wwwis by Alex Knowles, alex@ed.ac.uk
-#
-# Minor changes (removed setting of globals) to imgsize() and structuring into
-# Perl5 package form by rjray@uswest.com.
+# Once upon a time, this code was lifted almost verbatim from wwwis by Alex
+# Knowles, alex@ed.ac.uk. Since then, even I barely recognize it. It has
+# contributions, fixes, additions and enhancements from all over the world.
 #
 # See the file README for change history.
 #
@@ -11,217 +10,22 @@
 
 package Image::Size;
 
-=head1 NAME
-
-Image::Size - read the dimensions of an image in several popular formats
-
-=head1 SYNOPSIS
-
-    use Image::Size;
-    # Get the size of globe.gif
-    ($globe_x, $globe_y) = imgsize("globe.gif");
-    # Assume X=60 and Y=40 for remaining examples
-
-    use Image::Size 'html_imgsize';
-    # Get the size as "HEIGHT=X WIDTH=Y" for HTML generation
-    $size = html_imgsize("globe.gif");
-    # $size == "HEIGHT=40 WIDTH=60"
-
-    use Image::Size 'attr_imgsize';
-    # Get the size as a list passable to routines in CGI.pm
-    @attrs = attr_imgsize("globe.gif");
-    # @attrs == ('-HEIGHT', 40, '-WIDTH', 60)
-
-    use Image::Size;
-    # Get the size of an in-memory buffer
-    ($buf_x, $buf_y) = imgsize($buf);
-
-=head1 DESCRIPTION
-
-The B<Image::Size> library is based upon the C<wwwis> script written by
-Alex Knowles I<(alex@ed.ac.uk)>, a tool to examine HTML and add HEIGHT and
-WIDTH parameters to image tags. The sizes are cached internally based on
-file name, so multiple calls on the same file name (such as images used
-in bulleted lists, for example) do not result in repeated computations.
-
-B<Image::Size> provides three interfaces for possible import:
-
-=over
-
-=item imgsize(I<stream>)
-
-Returns a three-item list of the X and Y dimensions (width and height, in
-that order) and image type of I<stream>. Errors are noted by undefined
-(B<undef>) values for the first two elements, and an error string in the third.
-The third element can be (and usually is) ignored, but is useful when
-sizing data whose type is unknown.
-
-=item html_imgsize(I<stream>)
-
-Returns the width and height (X and Y) of I<stream> pre-formatted as a single
-string C<"HEIGHT=X WIDTH=Y"> suitable for addition into generated HTML IMG
-tags. If the underlying call to C<imgsize> fails, B<undef> is returned.
-
-=item attr_imgsize(I<stream>)
-
-Returns the width and height of I<stream> as part of a 4-element list useful
-for routines that use hash tables for the manipulation of named parameters,
-such as the Tk or CGI libraries. A typical return value looks like
-C<("-HEIGHT", Y, "-WIDTH", X)>. If the underlying call to C<imgsize> fails,
-B<undef> is returned.
-
-=back
-
-By default, only C<imgsize()> is imported. Any one or
-combination of the three may be imported, or all three may be with the
-tag B<:all>.
-
-=head2 Input Types
-
-The sort of data passed as I<stream> can be one of three forms:
-
-=over
-
-=item string
-
-If an ordinary scalar (string) is passed, it is assumed to be a file name
-(either absolute or relative to the current working directory of the
-process) and is searched for and opened (if found) as the source of data.
-Possible error messages (see DIAGNOSTICS below) may include file-access
-problems.
-
-=item scalar reference
-
-If the passed-in stream is a scalar reference, it is interpreted as pointing
-to an in-memory buffer containing the image data.
-
-        # Assume that &read_data gets data somewhere (WWW, etc.)
-        $img = &read_data;
-        ($x, $y, $id) = imgsize(\$img);
-        # $x and $y are dimensions, $id is the type of the image
-
-=item IO::File object reference
-
-The third option is to pass in an object of the C<IO::File> class that has
-already been instantiated on the target image file. The file pointer will
-necessarily move, but will be restored to its original position before
-subroutine end.
-
-        # $fh was passed in, is IO::File reference:
-        ($x, $y, $id) = imgsize($fh);
-        # Same as calling with filename, but more abstract.
-
-=back
-
-=head2 Recognizd Formats
-
-Image::Size understands and sizes data in the following formats:
-
-=over
-
-=item
-
-GIF
-
-=item
-
-JPG
-
-=item
-
-XBM
-
-=item
-
-XPM
-
-=item
-
-PPM family (PPM/PGM/PBM)
-
-=item
-
-PNG
-
-=item
-
-TIF
-
-=item
-
-BMP
-
-=back
-
-When using the C<imgsize> interface, there is a third, unused value returned
-if the programmer wishes to save and examine it. This value is the three-
-letter identity of the data type. This is useful when operating on open
-file handles or in-memory data, where the type is as unknown as the size.
-The two support routines ignore this third return value, so those wishing to
-use it must use the base C<imgsize> routine.
-
-=head1 DIAGNOSTICS
-
-The base routine, C<imgsize>, returns B<undef> as the first value in its list
-when an error has occured. The third element contains a descriptive
-error message.
-
-The other two routines simply return B<undef> in the case of error.
-
-=head1 CAVEATS
-
-This will reliably work on perl 5.002 or newer. Perl versions prior to
-5.003 do not have the B<IO::File> module by default, which this module
-requires. You will have to retrieve and install it, or upgrade to 5.003
-(or later), in which it is included as part of the core.
-
-Caching of size data can only be done on inputs that are file names. Open
-file handles and scalar references cannot be reliably transformed into a
-unique key for the table of cache data. Buffers could be cached using the
-MD5 module, and perhaps in the future I will make that an option. I do not,
-however, wish to lengthen the dependancy list by another item at this time.
-
-=head1 SEE ALSO
-
-C<http://www.tardis.ed.ac.uk/~ark/wwwis/> for a description of C<wwwis>
-and how to obtain it.
-
-=head1 AUTHORS
-
-Perl module interface by Randy J. Ray I<(rjray@uswest.com)>, original
-image-sizing code by Alex Knowles I<(alex@ed.ac.uk)> and Andrew Tong
-I<(werdna@ugcs.caltech.edu)>, used with their joint permission.
-
-Some bug fixes submitted by Bernd Leibing I<(bernd.leibing@rz.uni-ulm.de)>.
-PPM/PGM/PBM sizing code contributed by Carsten Dominik
-I<(dominik@strw.LeidenUniv.nl)>. Tom Metro I<(tmetro@vl.com)> re-wrote the JPG
-and PNG code, and also provided a PNG image for the test suite. Dan Klein
-I<(dvk@lonewolf.com)> contributed a re-write of the GIF code.  Cloyce Spradling
-I<(cloyce@headgear.org)> contributed TIFF sizing code and test images. Aldo
-Calpini I<(a.calpini@romagiubileo.it)> suggested support of BMP images (which
-I I<really> should have already thought of :-) and provided code to work
-with.
-
-=cut
-
 require 5.002;
 
-use strict qw(vars subs);
-use IO::File;
-use AutoLoader;
+use strict;
+use Symbol;
+use AutoLoader 'AUTOLOAD';
 use Exporter;
-use vars qw($revision $VERSION $read_in $last_pos);
+use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION
+            $read_in $last_pos);
 
-@Image::Size::ISA         = qw(Exporter);
-@Image::Size::EXPORT      = qw(imgsize);
-@Image::Size::EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
-%Image::Size::EXPORT_TAGS = (q/all/ => [@Image::Size::EXPORT_OK]);
+@ISA         = qw(Exporter);
+@EXPORT      = qw(imgsize);
+@EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
+%EXPORT_TAGS = ('all' => [@EXPORT_OK]);
 
-$Image::Size::revision    = q$Id: Size.pm,v 1.13 1998/12/09 08:58:03 rjray Exp $;
-$Image::Size::VERSION     = "2.9";
-
-# Enable direct use of AutoLoader's AUTOLOAD function:
-*Image::Size::AUTOLOAD = \&AutoLoader::AUTOLOAD;
+$revision    = q$Id: Size.pm,v 1.14 1999/03/10 08:02:47 rjray Exp $;
+$VERSION     = "2.10";
 
 # Package lexicals - invisible to outside world, used only in imgsize
 #
@@ -231,15 +35,15 @@ my %cache = ();
 # Try to catch the variants of eol-indicators for the sake of PPM family
 my $end = (($^O =~ /Win32/i) ? '\015' :
            ($^O =~ /MacOS/i) ? '\r' : '\n');
-my %type_map = ( '^GIF8[7,9]a'              => 'gifsize',
-                 "^\xFF\xD8"                => 'jpegsize',
-                 "^\x89PNG\x0d\x0a\x1a\x0a" => 'pngsize',
-                 "^P[1-6]$end"              => 'ppmsize',
-                 '\#define\s+\S+\s+\d+'     => 'xbmsize',
-                 '\/\* XPM \*\/'            => 'xpmsize',
-                 '^MM\x00\x2a'              => 'tiffsize',
-                 '^II\x2a\x00'              => 'tiffsize',
-                 '^BM'                      => 'bmpsize');
+my %type_map = ( '^GIF8[7,9]a'              => \&gifsize,
+                 "^\xFF\xD8"                => \&jpegsize,
+                 "^\x89PNG\x0d\x0a\x1a\x0a" => \&pngsize,
+                 "^P[1-6]$end"              => \&ppmsize,
+                 '\#define\s+\S+\s+\d+'     => \&xbmsize,
+                 '\/\* XPM \*\/'            => \&xpmsize,
+                 '^MM\x00\x2a'              => \&tiffsize,
+                 '^II\x2a\x00'              => \&tiffsize,
+                 '^BM'                      => \&bmpsize);
 
 #
 # These are lexically-scoped anonymous subroutines for reading the three
@@ -255,13 +59,13 @@ my $read_io = sub {
     if (defined($offset) && ($offset != $last_pos))
     {
         $last_pos = $offset;
-        return '' if (! $handle->seek($offset, 0));
+        return '' if (! seek($handle, $offset, 0));
     }
 
     my ($data, $rtn) = ('', 0);
     $rtn = read $handle, $data, $length;
     $data = '' unless ($rtn);
-    $last_pos = $handle->tell;
+    $last_pos = tell $handle;
 
     $data;
 };
@@ -281,7 +85,7 @@ my $read_buf = sub {
 
     $data;
 };
-        
+
 1;
 
 sub imgsize
@@ -295,11 +99,22 @@ sub imgsize
 
     $header = '';
 
-    if (ref($stream) eq 'IO::File')
+    if (ref($stream) eq "SCALAR")
     {
         $handle = $stream;
+        $read_in = $read_buf;
+        $header = substr($$handle, 0, 256);
+    }
+    elsif (ref $stream)
+    {
+        #
+        # I no longer require $stream to be in the IO::* space. So I'm assuming
+        # you don't hose yourself by passing a ref that can't do fileops. If
+        # you do, you fix it.
+        #
+        $handle = $stream;
         $read_in = $read_io;
-        $save_pos = $handle->tell;
+        $save_pos = tell $handle;
         $need_restore = 1;
 
         #
@@ -312,15 +127,9 @@ sub imgsize
         # But image files ought to be handled as binary anyway.
         #
         binmode($handle);
-        $handle->seek(0, 0);
+        seek($handle, 0, 0);
         read $handle, $header, 256;
-        $handle->seek(0, 0);
-    }
-    elsif (ref($stream) eq "SCALAR")
-    {
-        $handle = $stream;
-        $read_in = $read_buf;
-        $header = substr($$handle, 0, 256);
+        seek($handle, 0, 0);
     }
     else
     {
@@ -330,14 +139,14 @@ sub imgsize
         }
 
         #first try to open the stream
-        $handle = new IO::File "< $stream";
-        return (undef, undef, "Can't open image file $stream: $!")
-            unless (defined $handle);
+        $handle = gensym;
+        open($handle, "< $stream") or
+            return (undef, undef, "Can't open image file $stream: $!");
 
         # assist dain-bramaged operating systems -- SWD
         binmode($handle);
         read $handle, $header, 256;
-        $handle->seek(0, 0);
+        seek($handle, 0, 0);
         $read_in = $read_io;
     }
     $last_pos = 0;
@@ -347,13 +156,13 @@ sub imgsize
     # the grep() below matches the data to one of the known types, then the
     # called subroutine will override these...
     #
-    $id = "Data stream is not gif, xbm, xpm, jpeg, png, ppm, pgm, pbm, or tiff";
+    $id = "Data stream is not a known image file format";
     $x  = undef;
     $y  = undef;
 
     grep($header =~ /$_/ && (($x, $y, $id) = &{$type_map{$_}}($handle)),
          keys %type_map);
-    
+
     #
     # Added as an afterthought: I'm probably not the only one who uses the
     # same shaded-sphere image for several items on a bulleted list:
@@ -361,10 +170,10 @@ sub imgsize
     $cache{$stream} = join(',', $x, $y) unless (ref $stream or (! defined $x));
 
     #
-    # If we were passed an existant IO::File object, we need to restore the
+    # If we were passed an existant file handle, we need to restore the
     # old filepos:
     #
-    $handle->seek($save_pos, 0) if ($need_restore);
+    seek($handle, $save_pos, 0) if ($need_restore);
 
     # results:
     return (wantarray) ? ($x, $y, $id) : ();
@@ -395,7 +204,7 @@ sub img_eof
 
     return ($last_pos >= length($$stream)) if (ref($stream) eq "SCALAR");
 
-    $stream->eof;
+    eof $stream;
 }
 
 __END__
@@ -408,7 +217,7 @@ sub gifsize
     my $stream = shift;
 
     my ($cmapsize, $buf, $h, $w, $x, $y, $type);
-    
+
     my $gif_blockskip = sub {
         my ($skip, $type) = @_;
         my ($lbuf);
@@ -517,7 +326,7 @@ sub xbmsize
 
     my $input;
     my ($x, $y, $id) = (undef, undef, "Could not determine XBM size");
-    
+
     $input = &$read_in($stream, 1024);
     if ($input =~ /^\#define\s*\S*\s*(\d*)\s*\n\#define\s*\S*\s*(\d*)\s*\n/moi)
     {
@@ -742,3 +551,190 @@ sub bmpsize
     ($x, $y, $id);
 }
 
+=head1 NAME
+
+Image::Size - read the dimensions of an image in several popular formats
+
+=head1 SYNOPSIS
+
+    use Image::Size;
+    # Get the size of globe.gif
+    ($globe_x, $globe_y) = imgsize("globe.gif");
+    # Assume X=60 and Y=40 for remaining examples
+
+    use Image::Size 'html_imgsize';
+    # Get the size as "HEIGHT=X WIDTH=Y" for HTML generation
+    $size = html_imgsize("globe.gif");
+    # $size == "HEIGHT=40 WIDTH=60"
+
+    use Image::Size 'attr_imgsize';
+    # Get the size as a list passable to routines in CGI.pm
+    @attrs = attr_imgsize("globe.gif");
+    # @attrs == ('-HEIGHT', 40, '-WIDTH', 60)
+
+    use Image::Size;
+    # Get the size of an in-memory buffer
+    ($buf_x, $buf_y) = imgsize($buf);
+
+=head1 DESCRIPTION
+
+The B<Image::Size> library is based upon the C<wwwis> script written by
+Alex Knowles I<(alex@ed.ac.uk)>, a tool to examine HTML and add HEIGHT and
+WIDTH parameters to image tags. The sizes are cached internally based on
+file name, so multiple calls on the same file name (such as images used
+in bulleted lists, for example) do not result in repeated computations.
+
+B<Image::Size> provides three interfaces for possible import:
+
+=over
+
+=item imgsize(I<stream>)
+
+Returns a three-item list of the X and Y dimensions (width and height, in
+that order) and image type of I<stream>. Errors are noted by undefined
+(B<undef>) values for the first two elements, and an error string in the third.
+The third element can be (and usually is) ignored, but is useful when
+sizing data whose type is unknown.
+
+=item html_imgsize(I<stream>)
+
+Returns the width and height (X and Y) of I<stream> pre-formatted as a single
+string C<"HEIGHT=X WIDTH=Y"> suitable for addition into generated HTML IMG
+tags. If the underlying call to C<imgsize> fails, B<undef> is returned.
+
+=item attr_imgsize(I<stream>)
+
+Returns the width and height of I<stream> as part of a 4-element list useful
+for routines that use hash tables for the manipulation of named parameters,
+such as the Tk or CGI libraries. A typical return value looks like
+C<("-HEIGHT", Y, "-WIDTH", X)>. If the underlying call to C<imgsize> fails,
+B<undef> is returned.
+
+=back
+
+By default, only C<imgsize()> is imported. Any one or
+combination of the three may be imported, or all three may be with the
+tag B<:all>.
+
+=head2 Input Types
+
+The sort of data passed as I<stream> can be one of three forms:
+
+=over
+
+=item string
+
+If an ordinary scalar (string) is passed, it is assumed to be a file name
+(either absolute or relative to the current working directory of the
+process) and is searched for and opened (if found) as the source of data.
+Possible error messages (see DIAGNOSTICS below) may include file-access
+problems.
+
+=item scalar reference
+
+If the passed-in stream is a scalar reference, it is interpreted as pointing
+to an in-memory buffer containing the image data.
+
+        # Assume that &read_data gets data somewhere (WWW, etc.)
+        $img = &read_data;
+        ($x, $y, $id) = imgsize(\$img);
+        # $x and $y are dimensions, $id is the type of the image
+
+=item Open file handle
+
+The third option is to pass in an open filehandle (such as an object of
+the C<IO::File> class, for example) that has already been associated with
+the target image file. The file pointer will necessarily move, but will be
+restored to its original position before subroutine end.
+
+        # $fh was passed in, is IO::File reference:
+        ($x, $y, $id) = imgsize($fh);
+        # Same as calling with filename, but more abstract.
+
+=back
+
+=head2 Recognizd Formats
+
+Image::Size understands and sizes data in the following formats:
+
+=over
+
+=item
+
+GIF
+
+=item
+
+JPG
+
+=item
+
+XBM
+
+=item
+
+XPM
+
+=item
+
+PPM family (PPM/PGM/PBM)
+
+=item
+
+PNG
+
+=item
+
+TIF
+
+=item
+
+BMP
+
+=back
+
+When using the C<imgsize> interface, there is a third, unused value returned
+if the programmer wishes to save and examine it. This value is the three-
+letter identity of the data type. This is useful when operating on open
+file handles or in-memory data, where the type is as unknown as the size.
+The two support routines ignore this third return value, so those wishing to
+use it must use the base C<imgsize> routine.
+
+=head1 DIAGNOSTICS
+
+The base routine, C<imgsize>, returns B<undef> as the first value in its list
+when an error has occured. The third element contains a descriptive
+error message.
+
+The other two routines simply return B<undef> in the case of error.
+
+=head1 CAVEATS
+
+Caching of size data can only be done on inputs that are file names. Open
+file handles and scalar references cannot be reliably transformed into a
+unique key for the table of cache data. Buffers could be cached using the
+MD5 module, and perhaps in the future I will make that an option. I do not,
+however, wish to lengthen the dependancy list by another item at this time.
+
+=head1 SEE ALSO
+
+C<http://www.tardis.ed.ac.uk/~ark/wwwis/> for a description of C<wwwis>
+and how to obtain it.
+
+=head1 AUTHORS
+
+Perl module interface by Randy J. Ray I<(rjray@uswest.com)>, original
+image-sizing code by Alex Knowles I<(alex@ed.ac.uk)> and Andrew Tong
+I<(werdna@ugcs.caltech.edu)>, used with their joint permission.
+
+Some bug fixes submitted by Bernd Leibing I<(bernd.leibing@rz.uni-ulm.de)>.
+PPM/PGM/PBM sizing code contributed by Carsten Dominik
+I<(dominik@strw.LeidenUniv.nl)>. Tom Metro I<(tmetro@vl.com)> re-wrote the JPG
+and PNG code, and also provided a PNG image for the test suite. Dan Klein
+I<(dvk@lonewolf.com)> contributed a re-write of the GIF code.  Cloyce Spradling
+I<(cloyce@headgear.org)> contributed TIFF sizing code and test images. Aldo
+Calpini I<(a.calpini@romagiubileo.it)> suggested support of BMP images (which
+I I<really> should have already thought of :-) and provided code to work
+with.
+
+=cut
