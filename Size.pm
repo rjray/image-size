@@ -33,7 +33,7 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION
 @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %EXPORT_TAGS = ('all' => [@EXPORT_OK]);
 
-$revision    = q$Id: Size.pm,v 1.23 2001/04/13 08:51:40 rjray Exp $;
+$revision    = q$Id: Size.pm,v 1.24 2001/04/13 08:52:41 rjray Exp $;
 $VERSION     = "2.93";
 
 # Package lexicals - invisible to outside world, used only in imgsize
@@ -817,6 +817,7 @@ Calpini I<(a.calpini@romagiubileo.it)> suggested support of BMP images (which
 I I<really> should have already thought of :-) and provided code to work
 with. A patch to allow html_imgsize to produce valid output for XHTML, as
 well as some documentation fixes was provided by Charles Levert
-I<(charles@comm.polymtl.ca)>.
+I<(charles@comm.polymtl.ca)>. The ShockWave/Flash support was provided by
+Dmitry Dorofeev I<(dima@yasp.com)>.
 
 =cut
