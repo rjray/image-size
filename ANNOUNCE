@@ -1,21 +1,16 @@
-Version 2.5 of Image::Size has been uploaded to PAUSE, and will propagate
+Version 2.8 of Image::Size has been uploaded to PAUSE, and will propagate
 to all CPAN sites over the next few days.
 
 To build and install, you will need perl 5.002 or later, and sufficient
 access to install an extension.
 
-Summary of Changes in 2.7:
+Summary of Changes in 2.8:
 
-* Corrected numerous documentation bugs in which I repeatedly referred to the
-  X and Y dimensions in the wrong order. This was pointed out by several
-  people, but I also kept forgetting to attend to it.
-  
-* The base routine imgsize now returns a null list when called in a void
-  or scalar context. Mainly, I like pre-loading the cache under mod_perl in
-  Apache (so that spawned children inherit the cache) and didn't like the
-  idea of all those calls populating a stack that was then ignored.
+* Added support for BMP-format files. CR/LF translation between UNIX and
+  Windows machines should not affect this, but please let me know if there
+  are problems.
 
-From the README file for 2.7:
+From the README file for 2.8:
 
 Image::Size is a library based on the image-sizing code in the wwwimagesize
 script, a tool that analyzes HTML files and adds HEIGHT and WIDTH tags to
@@ -53,4 +48,5 @@ PNG code, and also provided a PNG image for the test suite. Dan Klein
 <dvk@lonewolf.com> contributed a re-write of the GIF code. Cloyce Spradling
 <cloyce@headgear.org> contributed the TIFF sizing code and test images.
 A fix for reading binary data on PC-ish operating systems was contributed by
-Silas Dunsmore <silasd@psyber.com>.
+Silas Dunsmore <silasd@psyber.com>. Aldo Calpini <a.calpini@romagiubileo.it>
+sent in code that was easily adapted to support BMP images (Windows bitmaps).
