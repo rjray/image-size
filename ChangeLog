@@ -1,5 +1,12 @@
 CHANGE HISTORY
 
+Changes in 2.92:
+
+* Added a patch from Dan Klein to make certain that imgsize() closes any
+  file descriptors it opens.
+  
+* Some housecleaning added to Makefile.PL.
+
 Changes in 2.91:
 
 * Added copyright notices (freely distributable under Perl's Artistic License)
