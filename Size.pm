@@ -33,8 +33,8 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION $NO_CACHE
 @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize $NO_CACHE $PCD_SCALE);
 %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-$revision    = q$Id: Size.pm,v 1.28 2002/02/28 07:55:54 rjray Exp $;
-$VERSION     = "2.96";
+$revision    = q$Id: Size.pm,v 1.29 2002/02/28 07:58:43 rjray Exp $;
+$VERSION     = "2.97";
 
 # This allows people to specifically request that the cache not be used
 $NO_CACHE = 0;

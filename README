@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.96 (See CHANGES below)
+Version: 2.97 (See CHANGES below)
 
 WHAT IS IT
 
@@ -68,11 +68,18 @@ You may need super-user access to install.
 
 PROBLEMS/BUG REPORTS
 
-Please send any reports of problems or bugs to rjray@tsoft.com.
+Please send any reports of problems or bugs to rjray@blackperl.com.
 
 
 CHANGES
 
-This is version 2.96:
+This is version 2.97:
 
-* There was a (silly) typo in the PCD code that slipped past my tests. Fixed.
+* Moved the code that changes a relative filename to an absolute one. This
+  was being called in all cases, now it is *not* called if cacheing is
+  disabled (via $NO_CACHE). This is for the sake of applications running in
+  environments where they may have trouble with full paths (due to "lockbox"
+  configurations).
+
+* Made a few adjustments to the docs per suggestion, to clarify some of the
+  usage cases.

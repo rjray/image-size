@@ -1,5 +1,16 @@
 CHANGE HISTORY
 
+Changes in 2.97:
+
+* Moved the code that changes a relative filename to an absolute one. This
+  was being called in all cases, now it is *not* called if cacheing is
+  disabled (via $NO_CACHE). This is for the sake of applications running in
+  environments where they may have trouble with full paths (due to "lockbox"
+  configurations).
+
+* Made a few adjustments to the docs per suggestion, to clarify some of the
+  usage cases.
+
 Changes in 2.96:
 
 * There was a (silly) typo in the PCD code that slipped past my tests. Fixed.
