@@ -1,5 +1,11 @@
 CHANGE HISTORY
 
+Changes in 2.98:
+
+* From tips provided by Philip Newton after a close reading of the manual page
+  and other docs, several typos and errors were cleared out, and a small
+  buglet in the error message within bmpsize() was corrected.
+
 Changes in 2.97:
 
 * Moved the code that changes a relative filename to an absolute one. This

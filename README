@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.97 (See CHANGES below)
+Version: 2.98 (See CHANGES below)
 
 WHAT IS IT
 
@@ -73,13 +73,8 @@ Please send any reports of problems or bugs to rjray@blackperl.com.
 
 CHANGES
 
-This is version 2.97:
+This is version 2.98:
 
-* Moved the code that changes a relative filename to an absolute one. This
-  was being called in all cases, now it is *not* called if cacheing is
-  disabled (via $NO_CACHE). This is for the sake of applications running in
-  environments where they may have trouble with full paths (due to "lockbox"
-  configurations).
-
-* Made a few adjustments to the docs per suggestion, to clarify some of the
-  usage cases.
+* From tips provided by Philip Newton after a close reading of the manual page
+  and other docs, several typos and errors were cleared out, and a small
+  buglet in the error message within bmpsize() was corrected.
