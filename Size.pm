@@ -147,6 +147,10 @@ PNG
 
 TIF
 
+=item
+
+BMP
+
 =back
 
 When using the C<imgsize> interface, there is a third, unused value returned
@@ -193,7 +197,10 @@ PPM/PGM/PBM sizing code contributed by Carsten Dominik
 I<(dominik@strw.LeidenUniv.nl)>. Tom Metro I<(tmetro@vl.com)> re-wrote the JPG
 and PNG code, and also provided a PNG image for the test suite. Dan Klein
 I<(dvk@lonewolf.com)> contributed a re-write of the GIF code.  Cloyce Spradling
-I<(cloyce@headgear.org)> contributed TIFF sizing code and test images.
+I<(cloyce@headgear.org)> contributed TIFF sizing code and test images. Aldo
+Calpini I<(a.calpini@romagiubileo.it)> suggested support of BMP images (which
+I I<really> should have already thought of :-) and provided code to work
+with.
 
 =cut
 
@@ -210,8 +217,8 @@ use vars qw($revision $VERSION $read_in $last_pos);
 @Image::Size::EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %Image::Size::EXPORT_TAGS = (q/all/ => [@Image::Size::EXPORT_OK]);
 
-$Image::Size::revision    = q$Id: Size.pm,v 1.11 1998/08/07 08:27:47 rjray Exp $;
-$Image::Size::VERSION     = "2.7";
+$Image::Size::revision    = q$Id: Size.pm,v 1.12 1998/12/07 10:18:08 rjray Exp $;
+$Image::Size::VERSION     = "2.8";
 
 # Enable direct use of AutoLoader's AUTOLOAD function:
 *Image::Size::AUTOLOAD = \&AutoLoader::AUTOLOAD;
@@ -228,7 +235,8 @@ my %type_map = ( '^GIF8[7,9]a'              => 'gifsize',
                  '\#define\s+\S+\s+\d+'     => 'xbmsize',
                  '\/\* XPM \*\/'            => 'xpmsize',
                  '^MM\x00\x2a'              => 'tiffsize',
-                 '^II\x2a\x00'              => 'tiffsize' );
+                 '^II\x2a\x00'              => 'tiffsize',
+                 '^BM'                      => 'bmpsize');
 
 #
 # These are lexically-scoped anonymous subroutines for reading the three
@@ -721,3 +729,21 @@ sub tiffsize {
 
     ($x, $y, $id);
 }
+
+# bmpsize: size a Windows-ish BitMaP image
+#
+# Adapted from code contributed by Aldo Calpini <a.calpini@romagiubileo.it>
+sub bmpsize
+{
+    my ($stream) = shift;
+
+    my ($x, $y, $id) = (undef, undef, "Unable to determine size of TIFF data");
+    my ($buffer);
+
+    $buffer = &$read_in($stream, 26);
+    ($x, $y) = unpack("x18LL", $buffer);
+    $id = 'BMP' if (defined $x and defined $y);
+
+    ($x, $y, $id);
+}
+
