@@ -1,0 +1,35 @@
+SPECIAL NOTE TO WINDOWS NT/95/98 USERS
+
+Some earlier versions of Perl built for these platforms lack the MakeMaker
+support needed to create a Makefile from the Makefile.PL provided. Use of
+the Image::Size module without this is fairly simple, and one of the most
+frequently-asked questions I receive.
+
+To use this module without engaging MakeMaker and the make (nmake, dmake)
+utility, follow these steps:
+
+1.	Edit the file Size.pm with your preferred plain text editor.
+
+2.	Find the line that reads "use AutoLoader;" and delete it.
+
+3.	Next, find the line that reads "__END__" and delete it.
+
+4.	In order for Perl to locate the module when you reference it in
+	your scripts, you will need to create a sub-directory "Image" in
+	one of base library paths for your Perl installation.
+
+5.	Once created, copy the file "Size.pm" into that directory.
+
+6.	If you wish to also use the "imgsize" command-line script, you
+	should be able to extract it with the command:
+
+		perl imgsize.PL
+	
+	Then you should copy it to a directory in your execution path.
+
+Taking this approach loses the benefits of the AutoLoader/AutoSplitter
+facility, namely the on-demand loading of the individual routines used to
+process the various image formats. Instead, all code is loaded and compiled
+initially.
+
+Randy
