@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.94 (See CHANGES below)
+Version: 2.95 (See CHANGES below)
 
 WHAT IS IT
 
@@ -73,9 +73,10 @@ Please send any reports of problems or bugs to rjray@tsoft.com.
 
 CHANGES
 
-This is version 2.94:
+This is version 2.95:
 
-* Fixed a small bug in the PSD code, and added a test to the suite using an
-  image supplied by Alex Weslowski <aweslowski@rpinteractive.com>.
+* Added a $NO_CACHE flag that is made importable for general use. This allows
+  disabling of data-cacheing for those systems that cannot work with it.
 
-* This release marks the first version to include RPM packaging as an option.
+* Added support for Kodak PhotoCD images (PCD). Note the specific details in
+  the manual page, relevant to this functionality.

@@ -1,5 +1,13 @@
 CHANGE HISTORY
 
+Changes in 2.95:
+
+* Added a $NO_CACHE flag that is made importable for general use. This allows
+  disabling of data-cacheing for those systems that cannot work with it.
+
+* Added support for Kodak PhotoCD images (PCD). Note the specific details in
+  the manual page, relevant to this functionality.
+
 Changes in 2.94:
 
 * Fixed a small bug in the PSD code, and added a test to the suite using an
