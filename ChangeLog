@@ -1,0 +1,204 @@
+CHANGE HISTORY
+
+This is version 2.902:
+
+* Added a file, README.Win32, with special instructions for users on systems
+  that lack MakeMaker support.
+
+* Worked on the regular expressions that are used on the text-based formats,
+  in hopes of further smoothing out the rift between UNIX and non-UNIX
+  systems.
+
+* Added use of Cwd. Filenames passed in are prepended with the current dir
+  if they aren't already absolute pathnames. This was to fix a subtle problem
+  where different files with the same relative names (referenced from different
+  directories) would confuse the cache.
+
+* Added the image type to the cached data. Previously, only dimensions were
+  cached. Now, a cache-hit returns the same triple returned originally.
+
+* Also added the file's modification-time to the cache, as the (growing!) use
+  of Image::Size in Apache mod_perl environments found that if an image is
+  changed, the cache won't notice. Now it does.
+
+* Added recognition of thumbnail-format pics from the popular viewer XV. The
+  value of image type for these is the string "XV".
+
+* Integrated a patch that makes html_imgsize generate tags that are XHTML-
+  compliant. Same patch also caught a few doc bugs that I'd missed.
+
+* Added more to the README file and the pod documentation, particularly
+  dealing with the Apache web server.
+
+* Moved the change history to this new file, from the prior location at the
+  end of README.
+
+
+Changes in 2.901:
+
+* Use of the Devel::Modlist package showed that my usage of IO::File pulled
+  in a lot of overhead (which I knew, but this meant I couldn't ignore it
+  any longer). Pulled out all IO::File stuff, use the Symbol package instead
+  for anonymous GLOBs. Also, the calling form that allows an open filehandle
+  be passed in is no longer so picky that it be blessed into IO::File. It
+  does have to be a hard reference, though. Symbolic refs still look like
+  filenames.
+
+* While doing the above, I eliminated the last of the strict-refs conflicts.
+  Prior to now, the package ran under strict subs and vars, but not refs. It
+  is now fully strict-clean.
+
+
+Changes in 2.9:
+
+* Support for BMP format in 2.8 was marred by a byte-ordering problem not
+  found in testing since my Linux and Windows machines are both Intel-based.
+  Sorry.
+
+* Added a contributed fix for a recurring problem with GIF87a images that
+  have descriptors similar to GIF89a.
+
+* Added a contributed fix to the PPM matching (prior to actual selection for
+  sizing) that was caused by some Win32 versions of Perl not handling "\n"
+  natively.
+
+* While at that last one, I made an attempt to fix any MacOS concerns that
+  may be triggered by the same consideration.
+
+* Added better error handling to the imgsize script and added a little more
+  to the manual page.
+
+
+Changes in 2.8:
+
+* Added support for BMP-format files. CR/LF translation between UNIX and
+  Windows machines should not affect this, but please let me know if there
+  are problems.
+
+
+Changes in 2.7:
+
+* Corrected numerous documentation bugs in which I repeatedly referred to the
+  X and Y dimensions in the wrong order. This was pointed out by several
+  people, but I also kept forgetting to attend to it.
+
+* The base routine imgsize now returns a null list when called in a void
+  or scalar context. Mainly, I like pre-loading the cache under mod_perl in
+  Apache (so that spawned children inherit the cache) and didn't like the
+  idea of all those calls populating a stack that was then ignored.
+
+
+Changes in 2.6:
+
+* 2.5 did not actually deliver the tests for the new TIFF code. Oops.
+
+* Found some variations of the formats of XPM and XBM that were not
+  compatible with the regex's being used. Tricky, flexible little devils,
+  especially XPM.
+
+
+Changes in 2.5:
+
+* Added support for TIFF images and two test cases. Many thanks to Cloyce
+  Spradling <cloyce@headgear.org> for both the code patches and the test
+  images.
+
+
+Changes in 2.4:
+
+* Small bug in jpegsize, not returning the string 'JPG' as the third element
+  of the returned list. Figures I have a half-documented feature, and someone
+  actually uses it. :-)
+
+
+Changes in 2.3:
+
+* Small fix to the regular expression in xpmsize.
+
+* Changed syntax of utilizing AutoLoader to conform to changes in upcoming
+  5.004 release.
+
+
+Changes in 2.2:
+
+* Added calls to binmode on filehandles, for the sake of OS flavors such as
+  OS/2, etc.
+
+* Cleaned up a new -w warning present in late versions of 5.003 (leading in
+  to 5.004).
+
+
+Changes in 2.1:
+
+* Added in changes to the error handling that were meant for 2.0.
+
+* Fixed a bug in attr_imgsize caused by the new return format.
+
+
+Changes in 2.0:
+
+* No longer uses filenames to determine image format for examination.
+
+* Can operate on already-open IO::File objects.
+
+* Can operate on in-memory data strings (buffers).
+
+* Documentation overhauled.
+
+* imgsize() now returns an ignorable third parameter. This value is a three-
+  letter identifier of the image format (using the standard suffixes. Useful
+  when sizing unknown data to also type the image.
+
+* Support for the PPM family (PPM, PGM and PBM) of formats.
+
+* JPG code extensively re-written and simplified.
+
+* PNG code re-written.
+
+* Test cases for PNG and PPM added. Test cases also cover the open-file and
+  in-memory capabilities.
+
+* Dropped the "optional second argument" thing in the invocation; no one used
+  it, and it was confusing and difficult to explain clearly.
+
+* Various typos cleaned up.
+
+
+Changes in 1.2:
+
+Two fixes given to me by Bernd Leibing <bernd.leibing@rz.uni-ulm.de>:
+
+* Fixed bug caused by perl quoting and RCS in Size.pm
+
+* imgsize now comes as imgsize.PL and is auto-extracted as part of the make,
+  utilizing your system's configuration to create the start-up #! line.
+
+
+Changes in 1.1:
+
+* Added a small, simple script called "imgsize" that gives command-line access
+  to the library functionality.
+
+* Discovered and fixed bug in sizing JPEGs.
+
+
+Initial version 1.0:
+
+* Library model for sizing code from wwwimagesize. By this, I also include
+  the extension-style infrastructure, MakeMaker usage, test suite, etc.
+
+* Changed format of returned data to generic (X, Y), added wrappers to format
+  into "WIDTH=x HEIGHT=y" HTML-style and (-WIDTH => x, -HEIGHT => y) CGI-style.
+
+* Added cacheing of sizes based on passed-in file name. I have one CGI script
+  that uses a given icon for a bullet list, with 35+ items in the list...
+
+* UNDOCUMENTED UNTIL BETTER TESTED: Optional second argument to imgsize can
+  be either scalar or a code ref; if scalar, is pasted in front of file name
+  as a directory component; if it is a code ref, the routine is called with
+  the file name as a single argument and is expected to return the full path
+  name. Kind of clunky right now, easier to just pass in the full path to
+  begin with.
+
+* Added the XPM sizing myself, though I have yet to use it (I do test it in
+  the test suite, though).
