@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.99 (See CHANGES below)
+Version: 2.991 (See CHANGES below)
 
 WHAT IS IT
 
@@ -74,7 +74,9 @@ Please send any reports of problems or bugs to rjray@blackperl.com.
 
 CHANGES
 
-This is version 2.99:
+This is version 2.991:
 
-Two patches applied, both provided by Ville Skyttä <ville.skytta@iki.fi>,
-adding support for MNG and Image::Magick.
+Small fix to setup of scalar refs in Size.pm, in case the ref points to
+an undef value.
+
+Code clean-up on the imgsize script.

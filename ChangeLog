@@ -1,5 +1,12 @@
 CHANGE HISTORY
 
+Changes in 2.991:
+
+* Small fix to setup of scalar refs in Size.pm, in case the ref points to
+  an undef value.
+
+* Code clean-up on the imgsize script.
+
 Changes in 2.99:
 
 * Applied two patches from Ville Skyttä <ville.skytta@iki.fi>, one providing
