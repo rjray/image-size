@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.10 (See CHANGE HISTORY below)
+Version: 2.901 (See CHANGE HISTORY below)
 
 WHAT IS IT
 
@@ -92,7 +92,7 @@ versions was contributed by Randy Kobes <randy@theory.uwinnipeg.ca>.
 
 CHANGE HISTORY
 
-This is version 2.10:
+This is version 2.901:
 
 * Use of the Devel::Modlist package showed that my usage of IO::File pulled
   in a lot of overhead (which I knew, but this meant I couldn't ignore it

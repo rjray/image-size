@@ -1,12 +1,11 @@
-Version 2.9 of Image::Size has been uploaded to PAUSE, and will propagate
-to all CPAN sites over the next few days. Most important is a fix to a
-byte-order problem in the BMP support added in 2.8.
+Version 2.901 of Image::Size has been uploaded to PAUSE, and will propagate
+to all CPAN sites over the next few days.
 
 To build and install, you will need perl 5.002 or later, and sufficient
 access to install an extension.
 
 
-Summary of Changes in 2.10:
+Summary of Changes in 2.901:
 
 * Use of the Devel::Modlist package showed that my usage of IO::File pulled
   in a lot of overhead (which I knew, but this meant I couldn't ignore it
@@ -21,7 +20,7 @@ Summary of Changes in 2.10:
   is now fully strict-clean.
 
 
-From the README file for 2.10:
+From the README file for 2.901:
 
 Image::Size is a library based on the image-sizing code in the wwwimagesize
 script, a tool that analyzes HTML files and adds HEIGHT and WIDTH tags to
