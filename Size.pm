@@ -26,8 +26,8 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION
 @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %EXPORT_TAGS = ('all' => [@EXPORT_OK]);
 
-$revision    = q$Id: Size.pm,v 1.18 2000/04/28 02:56:13 rjray Exp $;
-$VERSION     = "2.903";
+$revision    = q$Id: Size.pm,v 1.19 2000/11/28 08:09:47 rjray Exp $;
+$VERSION     = "2.904";
 
 # Package lexicals - invisible to outside world, used only in imgsize
 #
@@ -42,7 +42,8 @@ my %type_map = ( '^GIF8[7,9]a'              => \&gifsize,
                  '\/\* XPM \*\/'            => \&xpmsize,
                  '^MM\x00\x2a'              => \&tiffsize,
                  '^II\x2a\x00'              => \&tiffsize,
-                 '^BM'                      => \&bmpsize);
+                 '^BM'                      => \&bmpsize,
+                 '^8BPS'                    => \&psdsize);
 
 #
 # These are lexically-scoped anonymous subroutines for reading the three
@@ -133,7 +134,7 @@ sub imgsize
     else
     {
         #$stream = cwd . "/$stream" unless ($stream =~ m|^/|);
-	$stream = File::Spec->catfile(cwd(),$stream) unless File::Spec->file_name_is_absolute($stream);
+        $stream = File::Spec->catfile(cwd(),$stream) unless File::Spec->file_name_is_absolute($stream);
         $mtime = (stat $stream)[9];
         if (-e "$stream" and exists $cache{$stream})
         {
@@ -562,6 +563,21 @@ sub bmpsize
     $buffer = &$read_in($stream, 26);
     ($x, $y) = unpack("x18VV", $buffer);
     $id = 'BMP' if (defined $x and defined $y);
+
+    ($x, $y, $id);
+}
+
+# psdsize: determine the size of a PhotoShop save-file (*.PSD)
+sub psdsize
+{
+    my ($stream) = shift;
+
+    my ($x, $y, $id) = (undef, undef, "Unable to determine size of PSD data");
+    my ($buffer);
+
+    $buffer = &$read_in($stream, 26);
+    ($x, $y) = unpack("x14NN", $buffer);
+    $id = 'PSD' if (defined $x and defined $y);
 
     ($x, $y, $id);
 }
