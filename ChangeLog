@@ -1,6 +1,13 @@
 CHANGE HISTORY
 
-This is version 2.902:
+This is version 2.903:
+
+* Added a patch from <schinder@pobox.com>, reported as part of the CPAN
+  Testors effort. This abstracts some UNIX-centric treatment of file paths,
+  thus enabling the package to work on Macs.
+
+
+Changes in 2.902:
 
 * Added a file, README.Win32, with special instructions for users on systems
   that lack MakeMaker support.

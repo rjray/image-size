@@ -14,6 +14,7 @@ require 5.002;
 
 use strict;
 use Cwd 'cwd';
+use File::Spec;
 use Symbol;
 use AutoLoader 'AUTOLOAD';
 use Exporter;
@@ -25,8 +26,8 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION
 @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %EXPORT_TAGS = ('all' => [@EXPORT_OK]);
 
-$revision    = q$Id: Size.pm,v 1.17 2000/04/26 07:21:04 rjray Exp $;
-$VERSION     = "2.902";
+$revision    = q$Id: Size.pm,v 1.18 2000/04/28 02:56:13 rjray Exp $;
+$VERSION     = "2.903";
 
 # Package lexicals - invisible to outside world, used only in imgsize
 #
@@ -131,7 +132,8 @@ sub imgsize
     }
     else
     {
-        $stream = cwd . "/$stream" unless ($stream =~ m|^/|);
+        #$stream = cwd . "/$stream" unless ($stream =~ m|^/|);
+	$stream = File::Spec->catfile(cwd(),$stream) unless File::Spec->file_name_is_absolute($stream);
         $mtime = (stat $stream)[9];
         if (-e "$stream" and exists $cache{$stream})
         {

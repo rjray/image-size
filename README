@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.902 (See CHANGES below)
+Version: 2.903 (See CHANGES below)
 
 WHAT IS IT
 
@@ -73,63 +73,9 @@ Please send any reports of problems or bugs to rjray@tsoft.com.
 
 CHANGES
 
-This is version 2.902:
+This is version 2.903:
 
-* Added a file, README.Win32, with special instructions for users on systems
-  that lack MakeMaker support.
+* Added a patch from <schinder@pobox.com>, reported as part of the CPAN
+  Testors effort. This abstracts some UNIX-centric treatment of file paths,
+  thus enabling the package to work on Macs.
 
-* Worked on the regular expressions that are used on the text-based formats,
-  in hopes of further smoothing out the rift between UNIX and non-UNIX
-  systems.
-
-* Added use of Cwd. Filenames passed in are prepended with the current dir
-  if they aren't already absolute pathnames. This was to fix a subtle problem
-  where different files with the same relative names (referenced from different
-  directories) would confuse the cache.
-
-* Added the image type to the cached data. Previously, only dimensions were
-  cached. Now, a cache-hit returns the same triple returned originally.
-
-* Also added the file's modification-time to the cache, as the (growing!) use
-  of Image::Size in Apache mod_perl environments found that if an image is
-  changed, the cache won't notice. Now it does.
-
-* Added recognition of thumbnail-format pics from the popular viewer XV. The
-  value of image type for these is the string "XV".
-
-* Integrated a patch that makes html_imgsize generate tags that are XHTML-
-  compliant. Same patch also caught a few doc bugs that I'd missed.
-
-* Added more to the README file and the pod documentation, particularly
-  dealing with the Apache web server.
-
-* Moved the full change history to a separate file.
-
-
-CREDITS AND LICENSES
-
-This package is copyright © 1996,1998 by Randy Ray (rjray@tsoft.com) and may be
-distributed under terms of the Artistic License used to cover Perl itself.
-See the file Artistic in the distribution of Perl 5.002 or later for details
-of copy and distribution terms.
-
-Perl module interface by Randy J. Ray (rjray@tsoft.com), original
-image-sizing code by Alex Knowles (alex@ed.ac.uk) and Andrew Tong
-(werdna@ugcs.caltech.edu), used with their joint permission.
-
-Some bug fixes submitted by Bernd Leibing <bernd.leibing@rz.uni-ulm.de>.
-PPM/PGM/PBM sizing code contributed by Carsten Dominik
-<dominik@strw.LeidenUniv.nl>. Tom Metro <tmetro@vl.com> re-wrote the JPG
-and PNG code, and also provided a PNG image for the test suite. Dan Klein
-<dvk@lonewolf.com> contributed a re-write of the GIF code. Cloyce Spradling
-<cloyce@headgear.org> contributed the TIFF sizing code and test images.
-A fix for reading binary data on PC-ish operating systems was contributed by
-Silas Dunsmore <silasd@psyber.com>. Aldo Calpini <a.calpini@romagiubileo.it>
-sent in code that was easily adapted to support BMP images (Windows bitmaps).
-Fix for a recurring problem with GIF87a files contributed by Matthias Schmitt
-<matthias.schmitt@mmp.lu>. Fix for problems with PPM formats on some Win32
-versions was contributed by Randy Kobes <randy@theory.uwinnipeg.ca>. The
-tip leading to support for XV's thumbnail pics format came from
-<inwap@jomis.Tymnet.COM>. A patch to allow html_imgsize to produce valid
-output for XHTML, as well as some documentation fixes was provided by Charles
-Levert <charles@comm.polymtl.ca>.
