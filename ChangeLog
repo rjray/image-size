@@ -1,5 +1,12 @@
 CHANGE HISTORY
 
+Changes in 2.94:
+
+* Fixed a small bug in the PSD code, and added a test to the suite using an
+  image supplied by Alex Weslowski <aweslowski@rpinteractive.com>.
+
+* This release marks the first version to include RPM packaging as an option.
+
 Changes in 2.93:
 
 * Added a routine to provide Flash support, provided by Dmitry Dorofeev

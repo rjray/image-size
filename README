@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.93 (See CHANGES below)
+Version: 2.94 (See CHANGES below)
 
 WHAT IS IT
 
@@ -73,7 +73,9 @@ Please send any reports of problems or bugs to rjray@tsoft.com.
 
 CHANGES
 
-This is version 2.93:
+This is version 2.94:
 
-* Added a routine to provide Flash support, provided by Dmitry Dorofeev
-  <dima@yasp.com>.
+* Fixed a small bug in the PSD code, and added a test to the suite using an
+  image supplied by Alex Weslowski <aweslowski@rpinteractive.com>.
+
+* This release marks the first version to include RPM packaging as an option.
