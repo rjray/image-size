@@ -15,7 +15,7 @@ print "1..14\n";
 print (($x == 60 && $y == 40) ? "ok 1\n" : "not ok 1\n");
 
 $html = html_imgsize("${dir}letter_T.jpg");
-print (($html =~ /width=52\s+height=54/oi) ? "ok 2\n" : "not ok 2\n");
+print (($html =~ /width="52"\s+height="54"/oi) ? "ok 2\n" : "not ok 2\n");
 
 @attrs = attr_imgsize("${dir}xterm.xpm");
 print (($attrs[1] == 64 && $attrs[3] == 38) ? "ok 3\n" : "not ok 3\n");
@@ -26,9 +26,9 @@ print (($x == 50 && $y == 10) ? "ok 4\n" : "not ok 4\n");
 ($x, $y, $err) = imgsize("some non-existant file");
 print (($err =~ /can\'t open/oi) ? "ok 5\n" : "not ok 5\n");
 
-# Dave is actually a valid GIF, but this should work:
-($x, $y) = imgsize("${dir}dave.jpg");
-print (($x == 43 && $y == 50) ? "ok 6\n" : "not ok 6\n");
+# The Pak-38 is actually a valid GIF, but this should work:
+($x, $y) = imgsize("${dir}pak38.jpg");
+print (($x == 333 && $y == 194) ? "ok 6\n" : "not ok 6\n");
 
 # Test PNG image supplied by Tom Metro:
 ($x, $y) = imgsize("${dir}pass-1_s.png");
