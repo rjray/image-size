@@ -36,8 +36,8 @@ BEGIN
     @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize $NO_CACHE $PCD_SCALE);
     %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-    $revision = q$Id: Size.pm,v 1.34 2003/01/03 09:09:13 rjray Exp $;
-    $VERSION = "2.991";
+    $revision = q$Id: Size.pm,v 1.35 2003/07/21 06:48:47 rjray Exp $;
+    $VERSION = "2.992";
 
     # Check if we have Image::Magick available
     eval {
@@ -88,6 +88,7 @@ my %type_map = ( '^GIF8[7,9]a'              => \&gifsize,
                  '^8BPS'                    => \&psdsize,
                  '^PCD_OPA'                 => \&pcdsize,
                  '^FWS'                     => \&swfsize,
+                 '^CWS'                     => \&swfmxsize,
                  "^\x8aMNG\x0d\x0a\x1a\x0a" => \&mngsize);
 # Kodak photo-CDs are weird. Don't ask me why, you really don't want details.
 %PCD_MAP = ( 'base/16' => [ 192,  128  ],
@@ -421,6 +422,8 @@ Image::Size natively understands and sizes data in the following formats:
 =item PSD (Adobe PhotoShop)
 
 =item SWF (ShockWave/Flash)
+
+=item SWC (FlashMX, compressed SWF, Flash 6)
 
 =item PCD (Kodak PhotoCD, see notes below)
 
@@ -1010,4 +1013,25 @@ sub pcdsize
         [($orient ? (0, 1) : (1, 0))];
 
     return ($x, $y, 'PCD');
+}
+
+# swfmxsize: determine size of compressed ShockWave/Flash MX files. Adapted
+# from code sent by Victor Kuriashkin <victor@yasp.com>
+sub swfmxsize
+{
+    require Compress::Zlib;
+
+    my ($image) = @_;
+    my $header = &$read_in($image, 1058);
+    sub _bin2int { unpack("N", pack("B32", substr("0" x 32 . shift, -32))); }
+    my $ver = _bin2int(unpack 'B8', substr($header, 3, 1));
+
+    $header = substr($header, 8, 1024);
+    $header = Compress::Zlib::uncompress($header);
+    my $bs = unpack 'B133', substr($header, 0, 9);
+    my $bits = _bin2int(substr($bs, 0, 5));
+    my $x = int(_bin2int(substr($bs, 5+$bits, $bits))/20);
+    my $y = int(_bin2int(substr($bs, 5+$bits*3, $bits))/20);
+
+    return ($x, $y, 'SWC');
 }
