@@ -200,13 +200,16 @@ use AutoLoader;
 use Exporter;
 use vars qw($revision $VERSION $read_in $last_pos);
 
-@Image::Size::ISA         = qw(Exporter AutoLoader);
+@Image::Size::ISA         = qw(Exporter);
 @Image::Size::EXPORT      = qw(imgsize);
 @Image::Size::EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %Image::Size::EXPORT_TAGS = (q/all/ => [@Image::Size::EXPORT_OK]);
 
-$Image::Size::revision    = q$Id: Size.pm,v 1.5 1997/01/16 22:23:39 rjray Exp $;
-$Image::Size::VERSION     = "2.2";
+$Image::Size::revision    = q$Id: Size.pm,v 1.6 1997/04/21 18:30:30 rjray Exp $;
+$Image::Size::VERSION     = "2.3";
+
+# Enable direct use of AutoLoader's AUTOLOAD function:
+*Image::Size::AUTOLOAD = \&AutoLoader::AUTOLOAD;
 
 # Package lexicals - invisible to outside world, used only in imgsize
 #
@@ -528,7 +531,7 @@ sub xpmsize
 
     while ($line = &$read_in($stream, 1024))
     {
-        next unless ($line =~ /"(\d+)\s+(\d+)\s+\d+\s+\d+"/mo);
+        next unless ($line =~ /"\s*(\d+)\s+(\d+)\s+\d+\s+\d+"/mo);
         ($x, $y) = ($1, $2);
         $id = 'XPM';
         last;
