@@ -1,10 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.9 (See CHANGE HISTORY below)
-
-NOTE: Version 2.9 fixes a bug in the newly-added BMP support from 2.8. The
-      2.8 files will be marked for deletion from CPAN. Use this version,
-      instead.
+Version: 2.10 (See CHANGE HISTORY below)
 
 WHAT IS IT
 
@@ -96,24 +92,19 @@ versions was contributed by Randy Kobes <randy@theory.uwinnipeg.ca>.
 
 CHANGE HISTORY
 
-This is version 2.9:
+This is version 2.10:
 
-* Support for BMP format in 2.8 was marred by a byte-ordering problem not
-  found in testing since my Linux and Windows machines are both Intel-based.
-  Sorry.
+* Use of the Devel::Modlist package showed that my usage of IO::File pulled
+  in a lot of overhead (which I knew, but this meant I couldn't ignore it
+  any longer). Pulled out all IO::File stuff, use the Symbol package instead
+  for anonymous GLOBs. Also, the calling form that allows an open filehandle
+  be passed in is no longer so picky that it be blessed into IO::File. It
+  does have to be a hard reference, though. Symbolic refs still look like
+  filenames.
 
-* Added a contributed fix for a recurring problem with GIF87a images that
-  have descriptors similar to GIF89a.
-
-* Added a contributed fix to the PPM matching (prior to actual selection for
-  sizing) that was caused by some Win32 versions of Perl not handling "\n"
-  natively.
-
-* While at that last one, I made an attempt to fix any MacOS concerns that
-  may be triggered by the same consideration.
-
-* Added better error handling to the imgsize script and added a little more
-  to the manual page.
+* While doing the above, I eliminated the last of the strict-refs conflicts.
+  Prior to now, the package ran under strict subs and vars, but not refs. It
+  is now fully strict-clean.
 
 Initial version 1.0:
 
@@ -237,3 +228,23 @@ Changes in 2.8:
 * Added support for BMP-format files. CR/LF translation between UNIX and
   Windows machines should not affect this, but please let me know if there
   are problems.
+
+Changes in 2.9:
+
+* Support for BMP format in 2.8 was marred by a byte-ordering problem not
+  found in testing since my Linux and Windows machines are both Intel-based.
+  Sorry.
+
+* Added a contributed fix for a recurring problem with GIF87a images that
+  have descriptors similar to GIF89a.
+
+* Added a contributed fix to the PPM matching (prior to actual selection for
+  sizing) that was caused by some Win32 versions of Perl not handling "\n"
+  natively.
+
+* While at that last one, I made an attempt to fix any MacOS concerns that
+  may be triggered by the same consideration.
+
+* Added better error handling to the imgsize script and added a little more
+  to the manual page.
+
