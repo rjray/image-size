@@ -1,5 +1,10 @@
 CHANGE HISTORY
 
+Changes in 2.93:
+
+* Added a routine to provide Flash support, provided by Dmitry Dorofeev
+  <dima@yasp.com>.
+
 Changes in 2.92:
 
 * Added a patch from Dan Klein to make certain that imgsize() closes any

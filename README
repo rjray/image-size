@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.92 (See CHANGES below)
+Version: 2.93 (See CHANGES below)
 
 WHAT IS IT
 
@@ -73,9 +73,7 @@ Please send any reports of problems or bugs to rjray@tsoft.com.
 
 CHANGES
 
-This is version 2.92:
+This is version 2.93:
 
-* Added a patch from Dan Klein to make certain that imgsize() closes any
-  file descriptors it opens.
-
-* Some housecleaning added to Makefile.PL.
+* Added a routine to provide Flash support, provided by Dmitry Dorofeev
+  <dima@yasp.com>.
