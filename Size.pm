@@ -25,12 +25,12 @@ Image::Size - read the dimensions of an image in several popular formats
     use Image::Size 'html_imgsize';
     # Get the size as "HEIGHT=X WIDTH=Y" for HTML generation
     $size = html_imgsize("globe.gif");
-    # $size == "HEIGHT=60 WIDTH=40"
+    # $size == "HEIGHT=40 WIDTH=60"
 
     use Image::Size 'attr_imgsize';
     # Get the size as a list passable to routines in CGI.pm
     @attrs = attr_imgsize("globe.gif");
-    # @attrs == ('-HEIGHT', 60, '-WIDTH', 40)
+    # @attrs == ('-HEIGHT', 40, '-WIDTH', 60)
 
     use Image::Size;
     # Get the size of an in-memory buffer
@@ -50,24 +50,24 @@ B<Image::Size> provides three interfaces for possible import:
 
 =item imgsize(I<stream>)
 
-Returns a three-item list of the X and Y dimensions (height and width, in
+Returns a three-item list of the X and Y dimensions (width and height, in
 that order) and image type of I<stream>. Errors are noted by undefined
-B<undef> value for the first two elements, and an error string in the third.
+(B<undef>) values for the first two elements, and an error string in the third.
 The third element can be (and usually is) ignored, but is useful when
 sizing data whose type is unknown.
 
 =item html_imgsize(I<stream>)
 
-Returns the height and width (X and Y) of I<stream> pre-formatted as a single
+Returns the width and height (X and Y) of I<stream> pre-formatted as a single
 string C<"HEIGHT=X WIDTH=Y"> suitable for addition into generated HTML IMG
 tags. If the underlying call to C<imgsize> fails, B<undef> is returned.
 
 =item attr_imgsize(I<stream>)
 
-Returns the height and width of I<stream> as part of a 4-element list useful
+Returns the width and height of I<stream> as part of a 4-element list useful
 for routines that use hash tables for the manipulation of named parameters,
 such as the Tk or CGI libraries. A typical return value looks like
-C<("-HEIGHT", X, "-WIDTH", Y)>. If the underlying call to C<imgsize> fails,
+C<("-HEIGHT", Y, "-WIDTH", X)>. If the underlying call to C<imgsize> fails,
 B<undef> is returned.
 
 =back
@@ -168,8 +168,8 @@ The other two routines simply return B<undef> in the case of error.
 
 This will reliably work on perl 5.002 or newer. Perl versions prior to
 5.003 do not have the B<IO::File> module by default, which this module
-requires. You will have to retrieve and install it, or upgrade to 5.003,
-in which it is included as part of the core.
+requires. You will have to retrieve and install it, or upgrade to 5.003
+(or later), in which it is included as part of the core.
 
 Caching of size data can only be done on inputs that are file names. Open
 file handles and scalar references cannot be reliably transformed into a
@@ -210,8 +210,8 @@ use vars qw($revision $VERSION $read_in $last_pos);
 @Image::Size::EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %Image::Size::EXPORT_TAGS = (q/all/ => [@Image::Size::EXPORT_OK]);
 
-$Image::Size::revision    = q$Id: Size.pm,v 1.10 1998/01/25 06:35:03 rjray Exp $;
-$Image::Size::VERSION     = "2.6";
+$Image::Size::revision    = q$Id: Size.pm,v 1.11 1998/08/07 08:27:47 rjray Exp $;
+$Image::Size::VERSION     = "2.7";
 
 # Enable direct use of AutoLoader's AUTOLOAD function:
 *Image::Size::AUTOLOAD = \&AutoLoader::AUTOLOAD;
@@ -347,7 +347,7 @@ sub imgsize
     # Added as an afterthought: I'm probably not the only one who uses the
     # same shaded-sphere image for several items on a bulleted list:
     #
-    $cache{$stream} = join(',', $x, $y) unless (ref $stream);
+    $cache{$stream} = join(',', $x, $y) unless (ref $stream or (! defined $x));
 
     #
     # If we were passed an existant IO::File object, we need to restore the
@@ -356,7 +356,7 @@ sub imgsize
     $handle->seek($save_pos, 0) if ($need_restore);
 
     # results:
-    ($x, $y, $id);
+    return (wantarray) ? ($x, $y, $id) : ();
 }
 
 sub html_imgsize
@@ -637,7 +637,7 @@ sub ppmsize
                         "Unable to determine size of PPM/PGM/PBM data");
     my $n;
 
-    my $header = &$read_in($stream, 64);
+    my $header = &$read_in($stream, 1024);
 
     # PPM file of some sort
     $header =~ s/^\#.*//mg;
