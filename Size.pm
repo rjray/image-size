@@ -33,7 +33,7 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION $NO_CACHE
 @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize $NO_CACHE $PCD_SCALE);
 %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-$revision    = q$Id: Size.pm,v 1.29 2002/02/28 07:58:43 rjray Exp $;
+$revision    = q$Id: Size.pm,v 1.30 2002/03/02 07:44:20 rjray Exp $;
 $VERSION     = "2.97";
 
 # This allows people to specifically request that the cache not be used
@@ -349,7 +349,7 @@ restored to its original position before subroutine end.
 
 =back
 
-=head2 Recognizd Formats
+=head2 Recognized Formats
 
 Image::Size understands and sizes data in the following formats:
 
@@ -364,6 +364,8 @@ Image::Size understands and sizes data in the following formats:
 =item XPM
 
 =item PPM family (PPM/PGM/PBM)
+
+=item XV thumbnails
 
 =item PNG
 
@@ -380,11 +382,11 @@ Image::Size understands and sizes data in the following formats:
 =back
 
 When using the C<imgsize> interface, there is a third, unused value returned
-if the programmer wishes to save and examine it. This value is the three-
-letter identity of the data type. This is useful when operating on open
-file handles or in-memory data, where the type is as unknown as the size.
-The two support routines ignore this third return value, so those wishing to
-use it must use the base C<imgsize> routine.
+if the programmer wishes to save and examine it. This value is the identity of
+the data type, expressed as a 2-3 letter abbreviation as listed above. This is
+useful when operating on open file handles or in-memory data, where the type
+is as unknown as the size.  The two support routines ignore this third return
+value, so those wishing to use it must use the base C<imgsize> routine.
 
 =head2 Information Cacheing and C<$NO_CACHE>
 
@@ -515,7 +517,11 @@ well as some documentation fixes was provided by Charles Levert
 I<(charles@comm.polymtl.ca)>. The ShockWave/Flash support was provided by
 Dmitry Dorofeev I<(dima@yasp.com)>. Though I neglected to take note of who
 supplied the PSD (PhotoShop) code, a bug was identified by Alex Weslowski
-<aweslowski@rpinteractive.com>, who also provided a test image.
+<aweslowski@rpinteractive.com>, who also provided a test image. PCD support
+was adapted from a script made available by Phil Greenspun, as guided to my
+attention by Matt Mueller I<mueller@wetafx.co.nz>. A thorough read of the
+documentation and source by Philip Newton I<Philip.Newton@datenrevision.de>
+found several typos and a small buglet.
 
 =cut
 
@@ -859,7 +865,7 @@ sub bmpsize
 {
     my $stream = shift;
 
-    my ($x, $y, $id) = (undef, undef, "Unable to determine size of TIFF data");
+    my ($x, $y, $id) = (undef, undef, "Unable to determine size of BMP data");
     my ($buffer);
 
     $buffer = &$read_in($stream, 26);
