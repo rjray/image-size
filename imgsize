@@ -54,9 +54,10 @@ the Artistic License as packaged with Perl version 5.005 and later.
 =cut
 
 use strict;
+use vars qw($opt_h $opt_r $opt_a $opt_f);
+
 use Image::Size qw(:all);
 use Getopt::Std;
-use vars qw($opt_h $opt_r $opt_a $opt_f);
 
 my $rtn;
 
@@ -69,7 +70,7 @@ die sprintf("Usage: %s [ -r | -a | -f fmt ] file ...\n", ($0 =~ m|.*/(.*)|o))
     if ($opt_h || (! @ARGV) || (($opt_a && $opt_r) || ($opt_a && $opt_f) ||
                                 ($opt_r && $opt_f)));
 
-$rtn = \&return_html;
+$rtn = \&html_imgsize;
 $opt_a &&
     ($rtn = \&return_attr);
 $opt_r &&
@@ -101,34 +102,20 @@ sub return_attr
 {
     my ($width, $height, $err) = imgsize($_[0]);
 
-    return ((defined $width) ?
-            sprintf("(%s => %d, %s => %d)", attr_imgsize($_[0])) :
-            "error: $err");
+    (defined $width) ?
+        "(-width => $width, -height => $height)" : "error: $err";
 }
 
 sub return_imgsize
 {
     my ($width, $height, $err) = imgsize($_[0]);
 
-    return ((defined $width) ?
-            sprintf("%d %d", imgsize($_[0])) :
-            "error: $err");
+    (defined $width) ? "$width $height" : "error: $err";
 }
 
 sub return_fmt
 {
     my ($width, $height, $err) = imgsize($_[0]);
 
-    return ((defined $width) ?
-            sprintf($opt_f, imgsize($_[0])) :
-            "error: $err");
-}
-
-sub return_html
-{
-    my ($width, $height, $err) = imgsize($_[0]);
-
-    return ((defined $width) ?
-            sprintf("WIDTH=%d HEIGHT=%d", imgsize($_[0])) :
-            "error: $err");
+    (defined $width) ? sprintf($opt_f, $width, $height, $err) : "error: $err";
 }
