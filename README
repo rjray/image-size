@@ -1,0 +1,104 @@
+Image::Size - Determine the size of images in several common formats
+
+Version: 1.0 (See CHANGE HISTORY below)
+
+WHAT IS IT
+
+Image::Size is a library based on the image-sizing code in the wwwimagesize
+script, a tool that analyzes HTML files and adds HEIGHT and WIDTH tags to
+IMG directives. Image::Size has generalized that code to return a raw (X, Y)
+pair, and included wrappers to pre-format that output into either HTML or a
+set of attribute pairs suitable for the CGI.pm library by Lincoln Stein.
+Currently, Image::Size can size images in XPM, XBM, GIF, JPEG and PNG formats.
+
+I did this because my WWW server generates a lot of documents on demand
+rather than keeping them in static files. These documents not only use
+directional icons and buttons, but other graphics to annotate and highlight
+sections of the text. Without size attributes, browsers cannot render the
+text of a page until the image data is loaded and the size known for layout.
+This library enables scripts to size their images at run-time and include
+that as part of the generated HTML. Or for any other utility that uses and
+manipulates graphics. The idea of the basic interface + wrappers is to not
+limit the programmer to a certain data format.
+
+
+USING Image::Size IN YOUR SCRIPTS
+
+Image::Size has pod documentation that gives a more complete overview, but
+in a nutshell:
+
+        use Image::Size;
+
+        ($x, $y) = imgsize("something.gif");
+
+And ($x, $y) is now the width and height of something.gif. 95% of my usage of
+this library is in conjunction with Lincoln Stein's CGI.pm:
+
+        use CGI ':all';
+        use Image::Size 'attr_imgsize';
+
+        #
+        # Emit an IMG tag with size attributes:
+        #
+        print img({-SRC => '/server/images/arrow.gif',
+                   attr_imgsize('/server_root/server/images/arrow.gif')});
+
+
+BUILDING/INSTALLING
+
+This package is set up to configure and build like a typical Perl extension.
+To build:
+
+        perl Makefile.PL
+        make && make test
+
+If Image::Size passes all tests, then:
+
+        make install
+
+You may need super-user access to install.
+
+
+PROBLEMS/BUG REPORTS
+
+Please send any reports of problems or bugs to rjray@uswest.com. I wouldn't
+mind a short note to know that you're using this, just so I can justify its
+continued development to my manager :-). (In seriousness, a rough idea of
+how many others are using this will help promote its upkeep.)
+
+
+CREDITS AND LICENSES
+
+This package is copyright © 1996 by Randy Ray (rjray@uswest.com) and is
+placed in the public domain under terms of the Artistic License used to
+cover Perl itself. See the file Artistic in the distribution  of Perl 5.002 or
+later for details of copy and distribution terms.
+
+Perl module interface by Randy J. Ray (rjray@uswest.com), original
+image-sizing code by Alex Knowles (alex@ed.ac.uk) and Andrew Tong
+(werdna@ugcs.caltech.edu), used with their joint permission.
+
+
+CHANGE HISTORY
+
+This is version 1.0, the first released version. The features provided in this
+initial release are:
+
+* Library model for sizing code from wwwimagesize. By this, I also include
+  the extension-style infrastructure, MakeMaker usage, test suite, etc.
+
+* Changed format of returned data to generic (X, Y), added wrappers to format
+  into "WIDTH=x HEIGHT=y" HTML-style and (-WIDTH => x, -HEIGHT => y) CGI-style.
+
+* Added cacheing of sizes based on passed-in file name. I have one CGI script
+  that uses a given icon for a bullet list, with 35+ items in the list...
+
+* UNDOCUMENTED UNTIL BETTER TESTED: Optional second argument to imgsize can
+  be either scalar or a code ref; if scalar, is pasted in front of file name
+  as a directory component; if it is a code ref, the routine is called with
+  the file name as a single argument and is expected to return the full path
+  name. Kind of clunky right now, easier to just pass in the full path to
+  begin with.
+
+* Added the XPM sizing myself, though I have yet to use it (I do test it in
+  the test suite, though).

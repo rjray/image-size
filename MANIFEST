@@ -1,0 +1,10 @@
+MANIFEST				This file
+Makefile.PL				MM template
+README					Description and details
+Size.pm					v1.0
+t/all.t					test suite
+t/chalk.jpg				Support files for tests
+t/dave.jpg
+t/home.gif
+t/spacer50.xbm
+t/xterm.xpm
