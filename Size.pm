@@ -5,17 +5,7 @@
 # Minor changes (removed setting of globals) to imgsize() and structuring into
 # Perl5 package form by rjray@uswest.com.
 #
-# Release 1.1:
-#   Fixed bug in jpegsize
-#   Clarified some comments and docs
-# Up to release 1.0:
-#   Turned sizing into a library
-#   Added two wrappers to pre-format size into HTML or CGI attributes
-#   Added cacheing of sizes for multiple calls (I have a script that emits the
-#     same image 35+ times!)
-#   Simple test suite to test each image type I have a sample of (all save for
-#     PNG) and some of the error conditions. MakeMaker utility automatically
-#     configures in the test suite.
+# See the file README for change history.
 #
 ###############################################################################
 
@@ -215,8 +205,8 @@ use vars qw($revision $VERSION $read_in $last_pos);
 @Image::Size::EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %Image::Size::EXPORT_TAGS = (q/all/ => [@Image::Size::EXPORT_OK]);
 
-$Image::Size::revision    = q$Id: Size.pm,v 1.4 1996/11/29 23:18:55 rjray Exp $;
-$Image::Size::VERSION     = "2.1";
+$Image::Size::revision    = q$Id: Size.pm,v 1.5 1997/01/16 22:23:39 rjray Exp $;
+$Image::Size::VERSION     = "2.2";
 
 # Package lexicals - invisible to outside world, used only in imgsize
 #
@@ -294,6 +284,13 @@ sub imgsize
         #
         # First alteration (didn't wait long, did I?) to the existant handle:
         #
+        # assist dain-bramaged operating systems -- SWD
+        # SWD: I'm a bit uncomfortable with changing the mode on a file
+        # that something else "owns" ... the change is global, and there
+        # is no way to reverse it.
+        # But image files ought to be handled as binary anyway.
+        #
+        binmode($handle);
         $handle->seek(0, 0);
         read $handle, $header, 80;
         $handle->seek(0, 0);
@@ -316,6 +313,8 @@ sub imgsize
         return (undef, undef, "Can't open image file $stream: $!")
             unless (defined $handle);
 
+        # assist dain-bramaged operating systems -- SWD
+        binmode($handle);
         read $handle, $header, 80;
         $handle->seek(0, 0);
         $read_in = $read_io;
@@ -389,8 +388,7 @@ sub gifsize
 
     my ($cmapsize, $buf, $h, $w, $x, $y, $type);
     
-    sub gif_blockskip
-    {
+    my $gif_blockskip = sub {
         my ($skip, $type) = @_;
         my ($lbuf);
 
@@ -406,7 +404,7 @@ sub gifsize
             last if ord($lbuf) == 0;     # Block terminator
             &$read_in($stream, ord($lbuf));  # Skip data
         }
-    }
+    };
 
     $type = &$read_in($stream, 6);
     if (length($buf = &$read_in($stream, 7)) != 7 )
@@ -463,19 +461,19 @@ sub gifsize
                 elsif ($x == 0xFE)
                 {
                     # Comment Extension (GIF89a 24.c.ii)
-                    gif_blockskip(0, "Comment");
+                    &$gif_blockskip(0, "Comment");
                     next FINDIMAGE;       # Look again for Image Descriptor
                 }
                 elsif ($x == 0x01)
                 {
                     # Plain Text Label (GIF89a 25.c.ii)
-                    gif_blockskip(13, "text data");
+                    &$gif_blockskip(13, "text data");
                     next FINDIMAGE;       # Look again for Image Descriptor
                 }
                 elsif ($x == 0xFF)
                 {
                     # Application Extension Label (GIF89a 26.c.ii)
-                    gif_blockskip(12, "application data");
+                    &$gif_blockskip(12, "application data");
                     next FINDIMAGE;       # Look again for Image Descriptor
                 }
                 else
