@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.1 (See CHANGE HISTORY below)
+Version: 2.2 (See CHANGE HISTORY below)
 
 WHAT IS IT
 
@@ -72,7 +72,7 @@ CREDITS AND LICENSES
 
 This package is copyright © 1996 by Randy Ray (rjray@uswest.com) and may be
 distributed under terms of the Artistic License used to cover Perl itself.
-See the file Artistic in the distribution  of Perl 5.002 or later for details
+See the file Artistic in the distribution of Perl 5.002 or later for details
 of copy and distribution terms.
 
 Perl module interface by Randy J. Ray (rjray@uswest.com), original
@@ -84,16 +84,19 @@ PPM/PGM/PBM sizing code contributed by Carsten Dominik
 <dominik@strw.LeidenUniv.nl>. Tom Metro <tmetro@vl.com> re-wrote the JPG and
 PNG code, and also provided a PNG image for the test suite. Dan Klein
 <dvk@lonewolf.com> contributed a re-write of the GIF code.
+A fix for reading binary data on PC-ish operating systems was contributed by
+Silas Dunsmore <silasd@psyber.com>.
 
 
 CHANGE HISTORY
 
-This is version 2.1, a bug-fix version correcting a largish oversight on my
-part:
+This is version 2.2:
 
-* Added in changes to the error handling that were meant for 2.0.
+* Added calls to binmode on filehandles, for the sake of OS flavors such as
+  OS/2, etc.
 
-* Fixed a bug in attr_imgsize caused by the new return format.
+* Cleaned up a new -w warning present in late versions of 5.003 (leading in
+  to 5.004).
 
 Initial version 1.0:
 
@@ -159,3 +162,9 @@ Changes in 2.0:
   it, and it was confusing and difficult to explain clearly.
 
 * Various typos cleaned up.
+
+Changes in 2.1:
+
+* Added in changes to the error handling that were meant for 2.0.
+
+* Fixed a bug in attr_imgsize caused by the new return format.
