@@ -1,5 +1,9 @@
 CHANGE HISTORY
 
+Changes in 2.96:
+
+* There was a (silly) typo in the PCD code that slipped past my tests. Fixed.
+
 Changes in 2.95:
 
 * Added a $NO_CACHE flag that is made importable for general use. This allows

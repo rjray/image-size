@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.95 (See CHANGES below)
+Version: 2.96 (See CHANGES below)
 
 WHAT IS IT
 
@@ -73,10 +73,6 @@ Please send any reports of problems or bugs to rjray@tsoft.com.
 
 CHANGES
 
-This is version 2.95:
+This is version 2.96:
 
-* Added a $NO_CACHE flag that is made importable for general use. This allows
-  disabling of data-cacheing for those systems that cannot work with it.
-
-* Added support for Kodak PhotoCD images (PCD). Note the specific details in
-  the manual page, relevant to this functionality.
+* There was a (silly) typo in the PCD code that slipped past my tests. Fixed.
