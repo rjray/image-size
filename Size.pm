@@ -33,8 +33,8 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION
 @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %EXPORT_TAGS = ('all' => [@EXPORT_OK]);
 
-$revision    = q$Id: Size.pm,v 1.24 2001/04/13 08:52:41 rjray Exp $;
-$VERSION     = "2.93";
+$revision    = q$Id: Size.pm,v 1.25 2001/09/19 03:23:32 rjray Exp $;
+$VERSION     = "2.94";
 
 # Package lexicals - invisible to outside world, used only in imgsize
 #
@@ -589,7 +589,7 @@ sub psdsize
     my ($buffer);
 
     $buffer = &$read_in($stream, 26);
-    ($x, $y) = unpack("x14NN", $buffer);
+    ($y, $x) = unpack("x14NN", $buffer);
     $id = 'PSD' if (defined $x and defined $y);
 
     ($x, $y, $id);
@@ -818,6 +818,8 @@ I I<really> should have already thought of :-) and provided code to work
 with. A patch to allow html_imgsize to produce valid output for XHTML, as
 well as some documentation fixes was provided by Charles Levert
 I<(charles@comm.polymtl.ca)>. The ShockWave/Flash support was provided by
-Dmitry Dorofeev I<(dima@yasp.com)>.
+Dmitry Dorofeev I<(dima@yasp.com)>. Though I neglected to take note of who
+supplied the PSD (PhotoShop) code, a bug was identified by Alex Weslowski
+<aweslowski@rpinteractive.com>, who also provided a test image.
 
 =cut
