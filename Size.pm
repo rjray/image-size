@@ -13,6 +13,7 @@ package Image::Size;
 require 5.002;
 
 use strict;
+use Cwd 'cwd';
 use Symbol;
 use AutoLoader 'AUTOLOAD';
 use Exporter;
@@ -24,21 +25,18 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION
 @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize);
 %EXPORT_TAGS = ('all' => [@EXPORT_OK]);
 
-$revision    = q$Id: Size.pm,v 1.15 1999/03/11 08:47:24 rjray Exp $;
-$VERSION     = "2.901";
+$revision    = q$Id: Size.pm,v 1.16 1999/09/16 04:31:46 rjray Exp $;
+$VERSION     = "3.0";
 
 # Package lexicals - invisible to outside world, used only in imgsize
 #
 # Cache of files seen, and mapping of patterns to the sizing routine
 my %cache = ();
 
-# Try to catch the variants of eol-indicators for the sake of PPM family
-my $end = (($^O =~ /Win32/i) ? '\015' :
-           ($^O =~ /MacOS/i) ? '\r' : '\n');
 my %type_map = ( '^GIF8[7,9]a'              => \&gifsize,
                  "^\xFF\xD8"                => \&jpegsize,
                  "^\x89PNG\x0d\x0a\x1a\x0a" => \&pngsize,
-                 "^P[1-6]$end"              => \&ppmsize,
+                 "^P[1-7]"                  => \&ppmsize, # also XVpics
                  '\#define\s+\S+\s+\d+'     => \&xbmsize,
                  '\/\* XPM \*\/'            => \&xpmsize,
                  '^MM\x00\x2a'              => \&tiffsize,
@@ -133,9 +131,13 @@ sub imgsize
     }
     else
     {
+        unless ($stream =~ m|^/|)
+        {
+            $stream = cwd . "/$stream";
+        }
         if (-e "$stream" && exists $cache{$stream})
         {
-            return (split(/,/, $cache{$stream}));
+            return (split(/,/, $cache{$stream}, 3));
         }
 
         #first try to open the stream
@@ -167,7 +169,8 @@ sub imgsize
     # Added as an afterthought: I'm probably not the only one who uses the
     # same shaded-sphere image for several items on a bulleted list:
     #
-    $cache{$stream} = join(',', $x, $y) unless (ref $stream or (! defined $x));
+    $cache{$stream} = join(',', $x, $y, $id)
+        unless (ref $stream or (! defined $x));
 
     #
     # If we were passed an existant file handle, we need to restore the
@@ -312,7 +315,7 @@ sub gifsize
             }
         }
         else
-        { 
+        {
             return (undef, undef,
                     sprintf("Invalid/Corrupted GIF (Unknown code %#x)",
                             $x));
@@ -328,7 +331,7 @@ sub xbmsize
     my ($x, $y, $id) = (undef, undef, "Could not determine XBM size");
 
     $input = &$read_in($stream, 1024);
-    if ($input =~ /^\#define\s*\S*\s*(\d*)\s*\n\#define\s*\S*\s*(\d*)\s*\n/moi)
+    if ($input =~ /^\#define\s*\S*\s*(\d+)\s*\n\#define\s*\S*\s*(\d+)/si)
     {
         ($x, $y) = ($1, $2);
         $id = 'XBM';
@@ -350,7 +353,7 @@ sub xpmsize
 
     while ($line = &$read_in($stream, 1024))
     {
-        next unless ($line =~ /"\s*(\d+)\s+(\d+)(\s+\d+\s+\d+){1,2}\s*"/mo);
+        next unless ($line =~ /"\s*(\d+)\s+(\d+)(\s+\d+\s+\d+){1,2}\s*"/s);
         ($x, $y) = ($1, $2);
         $id = 'XPM';
         last;
@@ -387,7 +390,7 @@ sub pngsize
 # jpegsize: gets the width and height (in pixels) of a jpeg file
 # Andrew Tong, werdna@ugcs.caltech.edu           February 14, 1995
 # modified slightly by alex@ed.ac.uk
-# and further still by rjray@uswest.com
+# and further still by rjray@tsoft.com
 # optimization and general re-write from tmetro@vl.com
 sub jpegsize
 {
@@ -453,10 +456,16 @@ sub ppmsize
 
     # PPM file of some sort
     $header =~ s/^\#.*//mg;
-    ($n, $x, $y) = ($header =~ /^(P[1-6])\s+(\d+)\s+(\d+)/mo);
+    ($n, $x, $y) = ($header =~ /^(P[1-6])\s+(\d+)\s+(\d+)/s);
     $id = "PBM" if $n eq "P1" || $n eq "P4";
     $id = "PGM" if $n eq "P2" || $n eq "P5";
     $id = "PPM" if $n eq "P3" || $n eq "P6";
+    if ($n eq 'P7')
+    {
+        # John Bradley's XV thumbnail pics (thanks to inwap@jomis.Tymnet.COM)
+        $id = 'XV';
+        ($x, $y) = ($header =~ /IMGINFO:(\d+)x(\d+)/s);
+    }
 
     ($x, $y, $id);
 }
@@ -723,7 +732,7 @@ and how to obtain it.
 
 =head1 AUTHORS
 
-Perl module interface by Randy J. Ray I<(rjray@uswest.com)>, original
+Perl module interface by Randy J. Ray I<(rjray@tsoft.com)>, original
 image-sizing code by Alex Knowles I<(alex@ed.ac.uk)> and Andrew Tong
 I<(werdna@ugcs.caltech.edu)>, used with their joint permission.
 
