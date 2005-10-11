@@ -1,7 +1,0 @@
-Makefile
-pm_to_blib
-imgsize
-blib
-rpmrc
-rpmmacro
-perl-Image-Size.spec
