@@ -42,6 +42,8 @@ the results to your taste. C<sprintf> will be passed two numbers, so any
 other formatting directives will be lost. The numbers are passed as width
 first, then height.
 
+=back
+
 =head1 SEE ALSO
 
 L<Image::Size>

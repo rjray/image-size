@@ -17,55 +17,32 @@
 
 package Image::Size;
 
-require 5.002;
+require 5.6.0;
 
 use strict;
+use bytes;
 use Cwd ();
 use File::Spec ();
 use Symbol ();
 use AutoLoader 'AUTOLOAD';
 require Exporter;
-use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $revision $VERSION $NO_CACHE
-            %PCD_MAP $PCD_SCALE $read_in $last_pos *imagemagick_size);
+
+our (@ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS, $revision, $VERSION, $NO_CACHE,
+     $GIF_BEHAVIOR, %PCD_MAP, $PCD_SCALE, $read_in, $last_pos);
 
 BEGIN
 {
 
     @ISA         = qw(Exporter);
     @EXPORT      = qw(imgsize);
-    @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize $NO_CACHE $PCD_SCALE);
+    @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize $NO_CACHE $PCD_SCALE
+                      $GIF_BEHAVIOR);
     %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-    $revision = q$Id: Size.pm,v 1.35 2003/07/21 06:48:47 rjray Exp $;
-    $VERSION = "2.992";
+    $VERSION = "3.0";
 
-    # Check if we have Image::Magick available
-    eval {
-        local $SIG{__DIE__}; # protect against user installed die handlers
-        require Image::Magick;
-    };
-    if ($@) {
-        *imagemagick_size =
-            sub
-            {
-                (undef, undef, "Data stream is not a known image file format");
-            };
-    } else {
-        *imagemagick_size =
-            sub
-            {
-                my ($file_name) = @_;
-                my $img = Image::Magick->new();
-                my $x = $img->Read($file_name);
-                # Image::Magick error handling is a bit weird, see
-                # <http://www.simplesystems.org/ImageMagick/www/perl.html#erro>
-                if("$x") {
-                    return (undef, undef, "$x");
-                } else {
-                    return ($img->Get('width', 'height', 'format'));
-                }
-            };
-    }
+    # Default behavior for GIFs is to return the "screen" size
+    $GIF_BEHAVIOR = 0;
 
 }
 
@@ -260,6 +237,54 @@ sub imgsize
     return (wantarray) ? ($x, $y, $id) : ();
 }
 
+sub imagemagick_size {
+    my $module_name;
+    # First see if we have already loaded Graphics::Magick or Image::Magick
+    # If so, just use whichever one is already loaded.
+    if (exists $INC{'Graphics/Magick.pm'}) {
+        $module_name = 'Graphics::Magick';
+    }
+    elsif (exists $INC{'Image/Magick.pm'}) {
+        $module_name = 'Image::Magick';
+    }
+
+    # If neither are already loaded, try loading either one.
+    elsif ( _load_magick_module('Graphics::Magick') ) {
+       $module_name = 'Graphics::Magick';
+    }
+    elsif ( _load_magick_module('Image::Magick') ) {
+       $module_name = 'Image::Magick';
+    }
+
+    if ($module_name) {
+        my ($file_name) = @_;
+        my $img = $module_name->new();
+        my $x = $img->Read($file_name);
+        # Image::Magick error handling is a bit weird, see
+        # <http://www.simplesystems.org/ImageMagick/www/perl.html#erro>
+        if("$x") {
+            return (undef, undef, "$x");
+        } else {
+            return ($img->Get('width', 'height', 'format'));
+        }
+
+    }
+    else {
+        return (undef, undef, "Data stream is not a known image file format");
+    }
+}
+
+# load Graphics::Magick or Image::Magick if one is not already loaded. 
+sub _load_magick_module {
+    my $module_name = shift;
+    eval {
+        local $SIG{__DIE__};
+        require $module_name;
+    };
+    return !$@;
+}
+
+
 sub html_imgsize
 {
     my @args = imgsize(@_);
@@ -289,6 +314,8 @@ sub img_eof
     eof $stream;
 }
 
+# Simple converter-routine used by SWF and CWS code
+sub _bin2int { unpack("N", pack("B32", substr("0" x 32 . shift, -32))); }
 
 =head1 NAME
 
@@ -423,7 +450,7 @@ Image::Size natively understands and sizes data in the following formats:
 
 =item SWF (ShockWave/Flash)
 
-=item SWC (FlashMX, compressed SWF, Flash 6)
+=item CWS (FlashMX, compressed SWF, Flash 6)
 
 =item PCD (Kodak PhotoCD, see notes below)
 
@@ -505,6 +532,55 @@ real difference to be found is in whether the orientation of the image is
 portrait or landscape. That is in fact all that the library extracts from the
 image file.
 
+=head2 Controlling Behavior with GIF Images
+
+GIF images present a sort of unusual situation when it comes to reading size.
+Because GIFs can be a series of sub-images to be isplayed as an animated
+sequence, what part does the user want to get the size for?
+
+When dealing with GIF files, the user may control the behavior by setting the
+global value B<$Image::Size::GIF_BEHAVIOR>. Like the PCD setting, this may
+be imported when loading the library. Three values are recognized by the
+GIF-handling code:
+
+=over 4
+
+=item 0
+
+This is the default value. When this value is chosen, the returned dimensions
+are those of the "screen". The "screen" is the display area that the GIF
+declares in the first data block of the file. No sub-images will be greater
+than this in size; if they are, the specification dictates that they be
+cropped to fit within the box.
+
+This is also the fastest method for sizing the GIF, as it reads the least
+amount of data from the image stream.
+
+=item 1
+
+If this value is set, then the size of the first sub-image within the GIF is
+returned. For plain (non-animated) GIF files, this would be the same as the
+screen (though it doesn't have to be, strictly-speaking).
+
+When the first image descriptor block is read, the code immediately returns,
+making this only slightly-less efficient than the previous setting.
+
+=item 2
+
+If this value is chosen, then the code loops through all the sub-images of the
+animated GIF, and returns the dimensions of the largest of them.
+
+This option requires that the full GIF image be read, in order to ensure that
+the largest is found.
+
+=back
+
+Any value outside this range will produce an error in the GIF code before any
+image data is read.
+
+The value of dimensions other than the view-port ("screen") is dubious.
+However, some users have asked for that functionality.
+
 =head1 DIAGNOSTICS
 
 The base routine, C<imgsize>, returns B<undef> as the first value in its list
@@ -555,8 +631,7 @@ restricted to cases where the input to C<imgsize> is provided as file name.
 
 =head1 SEE ALSO
 
-C<http://www.tardis.ed.ac.uk/~ark/wwwis/> for a description of C<wwwis>
-and how to obtain it, L<Image::Magick>.
+The B<Image::Magick> and B<Image::Info> Perl modules at CPAN.
 
 =head1 AUTHORS
 
@@ -597,7 +672,7 @@ sub gifsize
 {
     my $stream = shift;
 
-    my ($cmapsize, $buf, $h, $w, $x, $y, $type);
+    my ($cmapsize, $buf, $sh, $sw, $h, $w, $x, $y, $type);
 
     my $gif_blockskip = sub {
         my ($skip, $type) = @_;
@@ -617,12 +692,23 @@ sub gifsize
         }
     };
 
+    return (undef, undef,
+            'Out-of-range value for $Image::Size::GIF_BEHAVIOR: ' .
+            $Image::Size::GIF_BEHAVIOR)
+        if ($Image::Size::GIF_BEHAVIOR > 2);
+
+    # Skip over the identifying string, since we already know this is a GIF
     $type = &$read_in($stream, 6);
     if (length($buf = &$read_in($stream, 7)) != 7 )
     {
         return (undef, undef, "Invalid/Corrupted GIF (bad header)");
     }
-    ($x) = unpack("x4 C", $buf);
+    ($sw, $sh, $x) = unpack("vv C", $buf);
+    if ($Image::Size::GIF_BEHAVIOR == 0)
+    {
+        return ($sw, $sh, 'GIF');
+    }
+
     if ($x & 0x80)
     {
         $cmapsize = 3 * (2**(($x & 0x07) + 1));
@@ -633,13 +719,28 @@ sub gifsize
         }
     }
 
+    # Before we start this loop, set $sw and $sh to 0s and use them to track
+    # the largest sub-image in the overall GIF.
+    $sw = $sh = 0;
+
   FINDIMAGE:
     while (1)
     {
         if (&img_eof($stream))
         {
-            return (undef, undef,
-                    "Invalid/Corrupted GIF (at EOF w/o Image Descriptors)");
+            # At this point, if we haven't returned then the user wants the
+            # largest of the sub-images. So, if $sh and $sw are still 0s, then
+            # we didn't see even one Image Descriptor block. Otherwise, return
+            # those two values.
+            if ($sw and $sh)
+            {
+                return ($sw, $sh, 'GIF');
+            }
+            else
+            {
+                return (undef, undef,
+                        "Invalid/Corrupted GIF (no Image Descriptors)");
+            }
         }
         $buf = &$read_in($stream, 1);
         ($x) = unpack("C", $buf);
@@ -651,10 +752,13 @@ sub gifsize
                 return (undef, undef,
                         "Invalid/Corrupted GIF (missing image header?)");
             }
-            ($x, $w, $y, $h) = unpack("x4 C4", $buf);
-            $x += $w * 256;
-            $y += $h * 256;
-            return ($x, $y, 'GIF');
+            ($x, $y) = unpack("x4 vv", $buf);
+            return ($x, $y, 'GIF') if ($Image::Size::GIF_BEHAVIOR == 1);
+            if ($x > $sw and $y > $sh)
+            {
+                $sw = $x;
+                $sh = $y;
+            }
         }
         if ($x == 0x21)
         {
@@ -984,8 +1088,6 @@ sub swfsize
     my $image  = shift;
     my $header = &$read_in($image, 33);
 
-    sub _bin2int { unpack("N", pack("B32", substr("0" x 32 . shift, -32))); }
-
     my $ver = _bin2int(unpack 'B8', substr($header, 3, 1));
     my $bs = unpack 'B133', substr($header, 8, 17);
     my $bits = _bin2int(substr($bs, 0, 5));
@@ -1023,15 +1125,15 @@ sub swfmxsize
 
     my ($image) = @_;
     my $header = &$read_in($image, 1058);
-    sub _bin2int { unpack("N", pack("B32", substr("0" x 32 . shift, -32))); }
     my $ver = _bin2int(unpack 'B8', substr($header, 3, 1));
 
-    $header = substr($header, 8, 1024);
-    $header = Compress::Zlib::uncompress($header);
+    my ($d, $status) = Compress::Zlib::inflateInit();
+    $header = $d->inflate(substr($header, 8, 1024));
+
     my $bs = unpack 'B133', substr($header, 0, 9);
     my $bits = _bin2int(substr($bs, 0, 5));
     my $x = int(_bin2int(substr($bs, 5+$bits, $bits))/20);
     my $y = int(_bin2int(substr($bs, 5+$bits*3, $bits))/20);
 
-    return ($x, $y, 'SWC');
+    return ($x, $y, 'CWS');
 }

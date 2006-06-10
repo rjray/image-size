@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 2.992 (See CHANGES below)
+Version: 3.0 (See CHANGES below)
 
 WHAT IS IT
 
@@ -74,5 +74,22 @@ Please send any reports of problems or bugs to rjray@blackperl.com.
 
 CHANGES
 
-* Added support for FlashMX (Shockwave Flash ver. 6), as contributed by
-  Victor L Kuriashkin <victor@yasp.com>.
+Added test suites for POD correctness and POD coverage.
+
+Implemented and documented a flag called $Image::Size::GIF_BEHAVIOR that
+controls whether the GIF code returns the screensize, the first sub-image
+or the largest of the sub-images.
+
+Applied a patch from mrj@mrj.spb.ru to fix usage of the Compress::Zlib
+module in the handling of compressed flash files. Added a new SWF file to
+test this, and added reference to the file in MANIFEST and t/all.t.
+
+Delay Image::Magick loading until it is needed. (Mark Stosberg).
+Add support for Graphics::Magick as an alternative to Image::Magick.
+If either Graphics::Magick or Image::Magick is loaded into memory
+that module will be used. Otherwise, they are both tried to be loaded,
+with Graphics::Magick being tried first. (Mark Stosberg). This patch also
+adds a new test suite, t/magick.t, to the distribution and modifies both
+MANIFEST and Makefile.PL (to add a build-dependancy on Test::More).
+
+With Test::More now required for building, converted t/all.t to use it.

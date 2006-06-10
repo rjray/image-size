@@ -6,6 +6,9 @@ README.Win32				Special considerations for Win NT/95/98
 Size.pm					the code
 imgsize   				Utility script
 t/all.t					test suite
+t/magick.t
+t/pod.t
+t/pod_coverage.t
 t/letter_T.jpg				Support files for tests
 t/pak38.jpg
 t/test.gif
@@ -18,3 +21,4 @@ t/lexjdic.tif
 t/bexjdic.tif
 t/yasp.swf
 t/468x60.psd
+t/8.swf

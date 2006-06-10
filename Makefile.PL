@@ -8,7 +8,7 @@ WriteMakefile(NAME         => 'Image::Size',
                (ABSTRACT   => 'A library to extract height/width from images',
                 AUTHOR     => 'Randy J. Ray (rjray@blackperl.com)') : ()),
               dist         => { COMPRESS => 'gzip -9f', SUFFIX => 'gz' },
-              PREREQ_PM    => { File::Spec => 0 },
+              PREREQ_PM    => { File::Spec => 0, Test::More => 0, },
               EXE_FILES    => ['imgsize'],
               clean        => { FILES =>
                                 'Image-Size-* *.spec *.rpm rpmrc rpmmacro' },
@@ -20,7 +20,7 @@ sub MY::tools_other
 
     my $text = shift->SUPER::tools_other(@_);
 
-    "$text\nECHO=\@echo\nRPM=rpm\n";
+    "$text\nECHO=echo\nRPM=rpm\n";
 }
 
 sub MY::post_constants
