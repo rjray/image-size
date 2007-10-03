@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 # Tests related to Image::Magick and Graphics::Magick
 

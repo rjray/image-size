@@ -1,5 +1,13 @@
 CHANGE HISTORY
 
+Changes in 3.01:
+
+* Added ex/ directory with a few samples.
+
+* Dropped ExtUtils::MakeMaker and switched to Module::Build. Makefile.PL is
+  now a wrapper of sorts around Build.PL. This allows adding licensing
+  information to META.yml for CPAN indexing.
+
 Changes in 3.0:
 
 * Added test suites for POD correctness and POD coverage.

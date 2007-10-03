@@ -1,6 +1,4 @@
-#!/usr/bin/perl
-
-use lib '../blib/lib';
+#!/usr/bin/perl -w
 
 use IO::File;
 use Image::Size qw(:all);

@@ -1,11 +1,15 @@
+Build.PL				Module::Build controller
 ChangeLog				Change history
 MANIFEST				This file
+MANIFEST.SKIP
 Makefile.PL				MM template
 README					Description and details
 README.Win32				Special considerations for Win NT/95/98
-Size.pm					the code
+ex/make_gallery.pl                      Example script using Image::Size
 imgsize   				Utility script
-t/all.t					test suite
+lib/Image/Size.pm			the code
+t/00_signature.t			test suite
+t/all.t
 t/magick.t
 t/pod.t
 t/pod_coverage.t
@@ -22,3 +26,5 @@ t/bexjdic.tif
 t/yasp.swf
 t/468x60.psd
 t/8.swf
+META.yml
+SIGNATURE    Added here by Module::Build
