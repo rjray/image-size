@@ -39,7 +39,7 @@ BEGIN
                       $GIF_BEHAVIOR);
     %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-    $VERSION = "3.0";
+    $VERSION = "3.01";
 
     # Default behavior for GIFs is to return the "screen" size
     $GIF_BEHAVIOR = 0;
