@@ -42,7 +42,7 @@ BEGIN
                       $GIF_BEHAVIOR);
     %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-    $VERSION = "3.01";
+    $VERSION = "3.1";
 
     # Default behavior for GIFs is to return the "screen" size
     $GIF_BEHAVIOR = 0;
@@ -1143,7 +1143,8 @@ sub swfmxsize
     my $ver = _bin2int(unpack 'B8', substr($header, 3, 1));
 
     my ($d, $status) = Compress::Zlib::inflateInit();
-    $header = $d->inflate(substr($header, 8, 1024));
+    $header = substr($header, 8, 1024);
+    $header = $d->inflate($header);
 
     my $bs = unpack 'B133', substr($header, 0, 9);
     my $bits = _bin2int(substr($bs, 0, 5));
