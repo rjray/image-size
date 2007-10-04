@@ -1,5 +1,18 @@
 CHANGE HISTORY
 
+Changes in 3.1:
+
+* Small change from n@shaplov.ru for a bug in CWS handling that only surfaced
+  when two CWS files were sized consecutively.
+
+* Updated the date on the copyright notice and added a "COPYRIGHT" section
+  to the documentation.
+
+* Changed the licensing terms. This is now dual-licensed under Artistic 2.0
+  and LGPL 2.1.
+
+* Restored the old Makefile.PL for users who don't have Module::Build.
+
 Changes in 3.01:
 
 * Added ex/ directory with a few samples.
