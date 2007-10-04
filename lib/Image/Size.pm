@@ -1,9 +1,12 @@
 ###############################################################################
 #
-# This file copyright (c) 2000 by Randy J. Ray, all rights reserved
+# This file copyright (c) 2007 by Randy J. Ray, all rights reserved
 #
 # Copying and distribution are permitted under the terms of the Artistic
-# License as distributed with Perl versions 5.005 and later.
+# License 2.0 (http://www.opensource.org/licenses/artistic-license-2.0.php) or
+# the GNU LGPL (http://www.opensource.org/licenses/lgpl-license.php).
+#
+# $Id$
 #
 ###############################################################################
 #
@@ -11,7 +14,7 @@
 # Knowles, alex@ed.ac.uk. Since then, even I barely recognize it. It has
 # contributions, fixes, additions and enhancements from all over the world.
 #
-# See the file README for change history.
+# See the file ChangeLog for change history.
 #
 ###############################################################################
 
@@ -658,6 +661,18 @@ attention by Matt Mueller I<mueller@wetafx.co.nz>. A thorough read of the
 documentation and source by Philip Newton I<Philip.Newton@datenrevision.de>
 found several typos and a small buglet. Ville Skyttä I<(ville.skytta@iki.fi)>
 provided the MNG and the Image::Magick fallback code.
+
+=head1 COPYRIGHT
+
+This module and the code within are copyright (c) 2007 by Randy J. Ray. Some
+sections may have copyright assigned to other authors, as indicated in the
+in-line documentation.
+
+=head1 LICENSE
+
+Copying and distribution are permitted under the terms of the Artistic
+License 2.0 (L<http://www.opensource.org/licenses/artistic-license-2.0.php>) or
+the GNU LGPL (L<http://www.opensource.org/licenses/lgpl-license.php>).
 
 =cut
 
