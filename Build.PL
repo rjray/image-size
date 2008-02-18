@@ -7,7 +7,7 @@ my $build = Module::Build->new(
     autosplit         => 'lib/Image/Size.pm',
     license           => 'perl',
     requires          => { perl => '5.006',
-                           File::Spec => 0, Compress::Zib => 2 },
+                           File::Spec => 0, Compress::Zlib => 2 },
     build_requires    => { Test::More => 0 },
     build_recommends  => { Image::Magick => 6 },
     # This *should* be "build_recommends", since it is only for the tests
