@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 3.1 (See CHANGES below)
+Version: 3.1.1 (See CHANGES below)
 
 WHAT IS IT
 
@@ -82,13 +82,17 @@ Please send any reports of problems or bugs to rjray@blackperl.com.
 
 CHANGES
 
-Small change from n@shaplov.ru for a bug in CWS handling that only surfaced
-when two CWS files were sized consecutively.
+Updated the license information to make sure all references are to both the
+Artistic 2.0 and the LGPL.
 
-Updated the date on the copyright notice and added a "COPYRIGHT" section
-to the documentation.
+Changed "use 5.6.0" lines to no longer use v-strings, for forward
+compatibility with Perl 5.10.0.
 
-Changed the licensing terms. This is now dual-licensed under Artistic 2.0
-and LGPL 2.1.
+Added "recommends" specification to Build.PL to refer to modules used in
+the testing phase (there is no "build_recommends" setting).
 
-Restored the old Makefile.PL for users who don't have Module::Build.
+Added Compress::Zlib to the list of required modules in Makefile.PL and
+Build.PL.
+
+Added "use warnings" to Size.pm to make sure it stays warnings-clean.
+

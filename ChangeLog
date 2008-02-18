@@ -1,5 +1,21 @@
 CHANGE HISTORY
 
+Changes in 3.1.1:
+
+* Updated the license information to make sure all references are to both the
+  Artistic 2.0 and the LGPL.
+
+* Changed "use 5.6.0" lines to no longer use v-strings, for forward
+  compatibility with Perl 5.10.0.
+
+* Added "recommends" specification to Build.PL to refer to modules used in
+  the testing phase (there is no "build_recommends" setting).
+
+* Added Compress::Zlib to the list of required modules in Makefile.PL and
+  Build.PL.
+
+* Added "use warnings" to Size.pm to make sure it stays warnings-clean.
+
 Changes in 3.1:
 
 * Small change from n@shaplov.ru for a bug in CWS handling that only surfaced

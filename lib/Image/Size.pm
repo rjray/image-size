@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# This file copyright (c) 2007 by Randy J. Ray, all rights reserved
+# This file copyright (c) 2008 by Randy J. Ray, all rights reserved
 #
 # Copying and distribution are permitted under the terms of the Artistic
 # License 2.0 (http://www.opensource.org/licenses/artistic-license-2.0.php) or
@@ -20,9 +20,10 @@
 
 package Image::Size;
 
-require 5.6.0;
+require 5.006;
 
 use strict;
+use warnings;
 use bytes;
 use Cwd ();
 use File::Spec ();
@@ -42,7 +43,7 @@ BEGIN
                       $GIF_BEHAVIOR);
     %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-    $VERSION = "3.1";
+    $VERSION = "3.100001";
 
     # Default behavior for GIFs is to return the "screen" size
     $GIF_BEHAVIOR = 0;
