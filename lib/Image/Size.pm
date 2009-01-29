@@ -4,7 +4,7 @@
 #
 # Copying and distribution are permitted under the terms of the Artistic
 # License 2.0 (http://www.opensource.org/licenses/artistic-license-2.0.php) or
-# the GNU LGPL (http://www.opensource.org/licenses/lgpl-license.php).
+# the GNU LGPL (http://www.opensource.org/licenses/lgpl-2.1.php).
 #
 # $Id$
 #
@@ -673,7 +673,7 @@ in-line documentation.
 
 Copying and distribution are permitted under the terms of the Artistic
 License 2.0 (L<http://www.opensource.org/licenses/artistic-license-2.0.php>) or
-the GNU LGPL (L<http://www.opensource.org/licenses/lgpl-license.php>).
+the GNU LGPL 2.1 (L<http://www.opensource.org/licenses/lgpl-2.1.php>).
 
 =cut
 
