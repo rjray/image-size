@@ -1,23 +1,64 @@
-#!/usr/bin/perl
+###############################################################################
+#
+#   Module::Build file for Image::Size
+#
+###############################################################################
+
+use 5.006;
+use strict;
+use warnings;
+
+use File::Spec;
 
 use Module::Build;
 
-my $build = Module::Build->new(
-    module_name       => 'Image::Size',
-    autosplit         => 'lib/Image/Size.pm',
-    license           => 'perl',
-    requires          => { perl => '5.006',
-                           File::Spec => 0, Compress::Zlib => 2 },
-    build_requires    => { Test::More => 0 },
-    build_recommends  => { Image::Magick => 6 },
-    # This *should* be "build_recommends", since it is only for the tests
-    recommends        => { Test::Pod => 0, Test::Pod::Coverage => 0 },
-    dist_author       => 'Randy J. Ray <rjray@blackperl.com>',
-    dist_abstract     => 'A library to extract height/width from images',
-    dist_version      => '3.1.1',
-    script_files      => [ 'imgsize' ],
-    sign              => 'yes, please',
-);
+my $class =
+    Module::Build->subclass(class => 'Image::Size::Builder',
+                            code => q|
+        sub ACTION_dist
+        {
+            my $self = shift;
 
-$build->add_to_cleanup(qw(META.yml Image-Size-*));
-$build->create_build_script;
+            # Create the text ChangeLog
+            $self->do_system('perl', 'changelog2x',
+                             qw(--template text --input ChangeLog.xml),
+                             qw(--output ChangeLog));
+
+            $self->SUPER::ACTION_manifest();
+            $self->SUPER::ACTION_dist();
+        }
+    |);
+
+my $builder =
+    $class->new(
+                module_name        => 'Image::Size',
+                license            => 'perl',
+                dist_author        => 'Randy J. Ray <rjray@blackperl.com>',
+                dist_abstract      =>
+                'A library to extract height/width from images',
+                dist_version       => '3.2',
+                build_requires     => {
+                                       'Module::Build' => '0.28',
+                                       'Test::More'    => '0.80',
+                                      },
+                requires           => {
+                                       'perl'                      => '5.006',
+                                       'File::Spec'                => '0.8',
+                                      },
+                recommends         => {
+				       'Compress::Zlib'      => '2',
+                                       'Test::Pod'           => '0',
+                                       'Test::Pod::Coverage' => '0',
+                                      },
+                add_to_cleanup     => [ qw(Image-Size-*
+                                           ChangeLog
+                                           MANIFEST
+                                           MANIFEST.bak
+                                           Makefile.PL) ],
+                create_makefile_pl => 'traditional',
+                sign               => 'here, please',
+               );
+
+$builder->create_build_script();
+
+exit 0;
