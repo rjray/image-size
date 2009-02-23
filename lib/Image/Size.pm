@@ -1243,7 +1243,8 @@ sub pcdsize
 # from code sent by Victor Kuriashkin <victor@yasp.com>
 sub swfmxsize
 {
-    require Compress::Zlib;
+    eval 'require Compress::Zlib;';
+    return (undef, undef, "Error loading Compress::Zlib: $@") if $@;
 
     my ($image) = @_;
     my $header = &$read_in($image, 1058);

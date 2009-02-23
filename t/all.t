@@ -4,6 +4,11 @@ use IO::File;
 use Image::Size qw(:all);
 use Test::More tests => 17;
 
+# We now only test the CWS branch if the user already has Compress::Zlib
+# available. We no longer require it for installation.
+eval 'require Compress::Zlib;';
+$do_cws_test = $@ ? 0 : 1;
+
 ($dir = $0) =~ s/\w+\.t$//o;
 
 #
@@ -52,9 +57,13 @@ ok(($x == 64 && $y == 38 && $id eq 'BMP'), 'Basic BMP format test');
 ($x, $y, $id) = imgsize("${dir}yasp.swf");
 ok(($x == 85 && $y == 36 && $id eq 'SWF'), 'Basic SWF format test');
 
-# Test CWS patch from mrj@mrj.spb.ru
-($x, $y, $id) = imgsize("${dir}8.swf");
-ok(($x == 280 && $y == 140 && $id eq 'CWS'), 'Basic CWS format test');
+SKIP: {
+    skip 'Compress::Zlib not installed', 1 unless $do_cws_test;
+
+    # Test CWS patch from mrj@mrj.spb.ru
+    ($x, $y, $id) = imgsize("${dir}8.swf");
+    ok(($x == 280 && $y == 140 && $id eq 'CWS'), 'Basic CWS format test');
+}
 
 # Test the PSD code (orig. contributer unknown)
 ($x, $y, $id) = imgsize("${dir}468x60.psd");
