@@ -741,7 +741,9 @@ was adapted from a script made available by Phil Greenspun, as guided to my
 attention by Matt Mueller I<mueller@wetafx.co.nz>. A thorough read of the
 documentation and source by Philip Newton I<Philip.Newton@datenrevision.de>
 found several typos and a small buglet. Ville Skyttä I<(ville.skytta@iki.fi)>
-provided the MNG and the Image::Magick fallback code.
+provided the MNG and the Image::Magick fallback code. Craig MacKenna
+I<(mackenna@animalhead.com)> suggested making the cache available so that it
+could be used with shared memory, and helped test my change before release.
 
 =head1 BUGS
 
