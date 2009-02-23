@@ -6,8 +6,6 @@
 # License 2.0 (http://www.opensource.org/licenses/artistic-license-2.0.php) or
 # the GNU LGPL (http://www.opensource.org/licenses/lgpl-2.1.php).
 #
-# $Id$
-#
 ###############################################################################
 #
 # Once upon a time, this code was lifted almost verbatim from wwwis by Alex
@@ -32,18 +30,18 @@ use AutoLoader 'AUTOLOAD';
 require Exporter;
 
 our (@ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS, $revision, $VERSION, $NO_CACHE,
-     $GIF_BEHAVIOR, %PCD_MAP, $PCD_SCALE, $read_in, $last_pos);
+     $GIF_BEHAVIOR, %PCD_MAP, $PCD_SCALE, $read_in, $last_pos, %CACHE);
 
 BEGIN
 {
 
     @ISA         = qw(Exporter);
     @EXPORT      = qw(imgsize);
-    @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize $NO_CACHE $PCD_SCALE
-                      $GIF_BEHAVIOR);
+    @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize
+                      %CACHE $NO_CACHE $PCD_SCALE $GIF_BEHAVIOR);
     %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-    $VERSION = "3.100001";
+    $VERSION = "3.2";
 
     # Default behavior for GIFs is to return the "screen" size
     $GIF_BEHAVIOR = 0;
@@ -55,8 +53,7 @@ $NO_CACHE = 0;
 
 # Package lexicals - invisible to outside world, used only in imgsize
 #
-# Cache of files seen, and mapping of patterns to the sizing routine
-my %cache = ();
+# Mapping of patterns to the sizing routines
 my %type_map = ( '^GIF8[7,9]a'              => \&gifsize,
                  "^\xFF\xD8"                => \&jpegsize,
                  "^\x89PNG\x0d\x0a\x1a\x0a" => \&pngsize,
@@ -176,14 +173,14 @@ sub imgsize
             $stream = File::Spec->catfile(Cwd::cwd(),$stream)
                 unless File::Spec->file_name_is_absolute($stream);
             $mtime = (stat $stream)[9];
-            if (-e "$stream" and exists $cache{$stream})
+            if (-e "$stream" and exists $CACHE{$stream})
             {
-                @list = split(/,/, $cache{$stream}, 4);
+                @list = split(/,/, $CACHE{$stream}, 4);
 
                 # Don't return the cache if the file is newer.
                 return @list[1 .. 3] unless ($list[0] < $mtime);
                 # In fact, clear it
-                delete $cache{$stream};
+                delete $CACHE{$stream};
             }
         }
 
@@ -218,7 +215,7 @@ sub imgsize
     # Added as an afterthought: I'm probably not the only one who uses the
     # same shaded-sphere image for several items on a bulleted list:
     #
-    $cache{$stream} = join(',', $mtime, $x, $y, $id)
+    $CACHE{$stream} = join(',', $mtime, $x, $y, $id)
         unless ($NO_CACHE or (ref $stream) or (! defined $x));
 
     #
@@ -345,7 +342,8 @@ Image::Size - read the dimensions of an image in several popular formats
     use Image::Size;
     # Get the size of an in-memory buffer
     ($buf_x, $buf_y) = imgsize(\$buf);
-    # Assuming that $buf was the data, imgsize() needed a reference to a scalar
+    # Assuming that $buf was the data, imgsize() needed a
+    $ reference to a scalar
 
 =head1 DESCRIPTION
 
@@ -498,6 +496,26 @@ is also imported when using the import tag B<C<:all>>. If the programmer
 chooses not to import it, it is still accessible by the fully-qualified package
 name, B<$Image::Size::NO_CACHE>.
 
+=head2 Sharing the Cache Between Processes
+
+If you are using B<Image::Size> in a multi-thread or multi-process environment,
+you may wish to enable sharing of the cached information between the
+processes (or threads). Image::Size does not natively provide any facility
+for this, as it would add to the list of dependencies.
+
+To make it possible for users to do this themselves, the C<%CACHE> hash-table
+that B<Image::Size> uses internally for storage may be imported in the B<use>
+statement. The user may then make use of packages such as B<IPC::MMA>
+(L<IPC::MMA>) that can C<tie> a hash to a shared-memory segment:
+
+    use Image::Size qw(imgsize %CACHE);
+    use IPC::MMA;
+
+    ...
+
+    tie %CACHE, 'IPC::MM::Hash', $mmHash; # $mmHash via mm_make_hash
+    # Now, forked processes will share any changes made to the cache
+
 =head2 Sizing PhotoCD Images
 
 With version 2.95, support for the Kodak PhotoCD image format is
@@ -585,13 +603,66 @@ image data is read.
 The value of dimensions other than the view-port ("screen") is dubious.
 However, some users have asked for that functionality.
 
-=head1 DIAGNOSTICS
+=head1 Image::Size AND WEBSERVERS
 
-The base routine, C<imgsize>, returns B<undef> as the first value in its list
-when an error has occured. The third element contains a descriptive
-error message.
+There are a few approaches to getting the most out of B<Image::Size> in a
+multi-process webserver environment. The two most common are pre-caching and
+using shared memory. These examples are focused on Apache, but should be
+adaptable to other server approaches as well.
 
-The other two routines simply return B<undef> in the case of error.
+=head2 Pre-Caching Image Data
+
+One approach is to include code in an Apache start-up script that reads the
+information on all images ahead of time. A script loaded via C<PerlRequire>,
+for example, becomes part of the server memory before child processes are
+created. When the children are created, they come into existence with a
+pre-primed cache already available.
+
+The shortcoming of this approach is that you have to plan ahead of time for
+which image files you need to cache. Also, if the list is long-enough it
+can slow server start-up time.
+
+The advantage is that it keeps the information centralized in one place and
+thus easier to manage and maintain. It also requires no additional CPAN
+modules.
+
+=head2 Shared Memory Caching
+
+Another approach is to introduce a shared memory segment that the individual
+processes all have access to. This can be done with any of a variety of
+shared memory modules on CPAN.
+
+Probably the easiest way to do this is to use one of the packages that allow
+the tying of a hash to a shared memory segment. You can use this in
+combination with importing the hash table variable that is used by
+B<Image::Size> for the cache, or you can refer to it explicitly by full
+package name:
+
+    use IPC::Shareable;
+    use Image::Size;
+
+    tie %Image::Size::CACHE, 'IPC::Shareable', 'size', { create => 1 };
+
+That example uses B<IPC::Shareable> (see L<IPC::Shareable>) and uses the option
+to the C<tie> command that tells B<IPC::Shareable> to create the segment. Once
+the initial server process starts to create children, they will all share the
+tied handle to the memory segment.
+
+Another package that provides this capability is B<IPC::MMA> (see
+L<IPC::MMA>), which provides shared memory management via the I<mm> library
+from Ralf Engelschall (details available in the documentation for
+B<IPC::MMA>):
+
+    use IPC::MMA;
+    use Image::Size qw(%CACHE);
+
+    my $mm = mm_create(65536, '/tmp/test_lockfile');
+    my $mmHash = mm_make_hash($mm);
+    tie %CACHE, 'IPC::MM::Hash', $mmHash;
+
+As before, this is done in the start-up phase of the webserver. As the
+child processes are created, they inherit the pointer to the existing shared
+segment.
 
 =head1 MORE EXAMPLES
 
@@ -622,6 +693,14 @@ The advantage here, besides not having to hard-code the server document root,
 is that Apache passes the sub-request through the usual request lifecycle,
 including any stages that would re-write the URL or otherwise modify it.
 
+=head1 DIAGNOSTICS
+
+The base routine, C<imgsize>, returns B<undef> as the first value in its list
+when an error has occured. The third element contains a descriptive
+error message.
+
+The other two routines simply return B<undef> in the case of error.
+
 =head1 CAVEATS
 
 Caching of size data can only be done on inputs that are file names. Open
@@ -635,7 +714,8 @@ restricted to cases where the input to C<imgsize> is provided as file name.
 
 =head1 SEE ALSO
 
-The B<Image::Magick> and B<Image::Info> Perl modules at CPAN.
+L<Image::Magick> and L<Image::Info> Perl modules at CPAN. The
+B<Graphics::Magick> Perl API at L<http://www.graphicsmagick.org/perl.html>.
 
 =head1 AUTHORS
 
@@ -663,13 +743,39 @@ documentation and source by Philip Newton I<Philip.Newton@datenrevision.de>
 found several typos and a small buglet. Ville Skyttä I<(ville.skytta@iki.fi)>
 provided the MNG and the Image::Magick fallback code.
 
-=head1 COPYRIGHT
+=head1 BUGS
 
-This module and the code within are copyright (c) 2007 by Randy J. Ray. Some
-sections may have copyright assigned to other authors, as indicated in the
-in-line documentation.
+Please report any bugs or feature requests to
+C<bug-image-size at rt.cpan.org>, or through the web interface at
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Image-Size>. I will be
+notified, and then you'll automatically be notified of progress on
+your bug as I make changes.
 
-=head1 LICENSE
+=head1 SUPPORT
+
+=over 4
+
+=item * RT: CPAN's request tracker
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Image-Size>
+
+=item * AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/Image-Size>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/Image-Size>
+
+=item * Search CPAN
+
+L<http://search.cpan.org/dist/Image-Size>
+
+=back
+
+=head1 COPYRIGHT & LICENSE
+
+This file and the code within are copyright (c) 1996-2009 by Randy J. Ray.
 
 Copying and distribution are permitted under the terms of the Artistic
 License 2.0 (L<http://www.opensource.org/licenses/artistic-license-2.0.php>) or
