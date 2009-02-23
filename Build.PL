@@ -20,7 +20,7 @@ my $class =
             my $self = shift;
 
             # Create the text ChangeLog
-            $self->do_system('perl', 'changelog2x',
+            $self->do_system('changelog2x',
                              qw(--template text --input ChangeLog.xml),
                              qw(--output ChangeLog));
 
@@ -54,6 +54,7 @@ my $builder =
                                            ChangeLog
                                            MANIFEST
                                            MANIFEST.bak
+					   META.yml
                                            Makefile.PL) ],
                 create_makefile_pl => 'traditional',
                 sign               => 'here, please',

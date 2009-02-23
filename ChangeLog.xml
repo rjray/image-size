@@ -2,6 +2,7 @@
 <!-- :tabSize=2:indentSize=2:wrap=hard: -->
 <changelog xmlns="http://www.blackperl.com/2009/01/ChangeLogML"
   xmlns:sc="http://www.blackperl.com/2009/01/ChangeLogML/source-control"
+  xmlns:git="http://www.blackperl.com/2009/01/ChangeLogML/source-control/git"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:xhtml="http://www.w3.org/1999/xhtml"
   xsi:schemaLocation="http://www.blackperl.com/XML/ChangeLog etc/ChangeLogML.xsd">
@@ -12,6 +13,60 @@
     information from files in a wide variety of common (and not-so-common)
     formats.
   </description>
+  <release version="3.2" date="2009-02-23T05:00:00-08:00" sc:tag="v3.2">
+    <change git:commit="16dfa93026200cf00840f5ec721ac765644f72a7">
+      <fileset>
+        <file path="lib/Image/Size.pm" />
+        <file path="t/all.t" />
+      </fileset>
+      <description>
+        Make the package buildable in a pure-Perl software stack.  Per
+        <xhtml:a href="http://rt.cpan.org/Ticket/Display.html?id=42930">RT ticket #42930</xhtml:a>,
+        make Compress::Zlib optional, so that those who do not need
+        it are not required to install it. Updated the test around the
+        compressed-SWF file to skip if Compress::Zlib is absent.
+      </description>
+    </change>
+    <change git:commit="b59616cef04cfe6aac47b6c332c405633946b10d">
+      <fileset>
+        <file path="Build.PL" action="RESTORE" />
+        <file path="ChangeLog" action="DELETE" />
+        <file path="ChangeLog.xml" action="ADD" />
+        <file path="MANIFEST" action="DELETE" />
+        <file path="Makefile.PL" action="DELETE" />
+        <file path="README.Win32" action="DELETE" />
+        <file path="etc/ChangeLogML.xsd" action="ADD" />
+      </fileset>
+      <description>
+        Making large-scale house-keeping changes to the build/dist
+        process. Replace ChangeLog (plain-text) with a ChangeLogML file created
+        from the CVS/SVN history and hand-adjusted; add the XSD for
+        ChangeLogML; restore Build.PL and heavily enhance; and remove
+        README.Win32, Makefile.PL and MANIFEST.
+      </description>
+    </change>
+    <change git:commit="36875a8b9f6c4407b38e62e70483ea154cd836f5">
+      <file path="lib/Image/Size.pm" />
+      <description>
+        Per
+        <xhtml:a href="http://rt.cpan.org/Ticket/Display.html?id=43452">RT ticket #43452</xhtml:a>,
+        make the cache visible outside the lexical scope of the
+        module This allows the hash to be used with packages like
+        IPC::Shareable or IPC::MM to enable sharing the cache between
+        processes. Added extra documentation of this, and a new section
+        describing approaches to cache-sharing.
+      </description>
+    </change>
+    <change date="2009-01-29T01:35:27.047379Z" author="rjray">
+      <fileset revision="136">
+        <file path="imgsize"/>
+        <file path="lib/Image/Size.pm"/>
+      </fileset>
+      <description>
+        Fix URL/specification of the license info for LGPL.
+      </description>
+    </change>
+  </release>
   <release version="3.1.1" sc:tag="v3_1_1" date="2008-02-18T06:37:36.755344Z">
     <change date="2008-02-18T06:36:02.029666Z" author="rjray">
       <file path="Build.PL" revision="134"/>

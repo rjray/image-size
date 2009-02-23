@@ -1,6 +1,6 @@
 Image::Size - Determine the size of images in several common formats
 
-Version: 3.1.1 (See CHANGES below)
+Version: 3.2 (See CHANGES below)
 
 WHAT IS IT
 
@@ -82,17 +82,35 @@ Please send any reports of problems or bugs to rjray@blackperl.com.
 
 CHANGES
 
-Updated the license information to make sure all references are to both the
-Artistic 2.0 and the LGPL.
+* lib/Image/Size.pm
+* t/all.t
+Make the package buildable in a pure-Perl software stack. Per   
+RT ticket #42930, make Compress::Zlib optional, so that those   
+who do not need it are not required to install it. Updated the  
+test around the compressed-SWF file to skip if Compress::Zlib   
+is absent.                                                      
 
-Changed "use 5.6.0" lines to no longer use v-strings, for forward
-compatibility with Perl 5.10.0.
+* Build.PL (restored)
+* ChangeLog (deleted)
+* ChangeLog.xml (added)
+* MANIFEST (deleted)
+* Makefile.PL (deleted)
+* README.Win32 (deleted)
+* etc/ChangeLogML.xsd (added)
+Making large-scale house-keeping changes to the build/dist      
+process. Replace ChangeLog (plain-text) with a ChangeLogML file 
+created from the CVS/SVN history and hand-adjusted; add the XSD 
+for ChangeLogML; restore Build.PL and heavily enhance; and      
+remove README.Win32, Makefile.PL and MANIFEST.                  
 
-Added "recommends" specification to Build.PL to refer to modules used in
-the testing phase (there is no "build_recommends" setting).
+* lib/Image/Size.pm
+Per RT ticket #43452, make the cache visible outside the        
+lexical scope of the module This allows the hash to be used     
+with packages like IPC::Shareable or IPC::MM to enable sharing  
+the cache between processes. Added extra documentation of this, 
+and a new section describing approaches to cache-sharing.       
 
-Added Compress::Zlib to the list of required modules in Makefile.PL and
-Build.PL.
-
-Added "use warnings" to Size.pm to make sure it stays warnings-clean.
-
+Transaction revision: 136
+* imgsize
+* lib/Image/Size.pm
+Fix URL/specification of the license info for LGPL.             
