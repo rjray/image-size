@@ -36,7 +36,7 @@ my $builder =
                 dist_author        => 'Randy J. Ray <rjray@blackperl.com>',
                 dist_abstract      =>
                 'A library to extract height/width from images',
-                dist_version       => '3.2',
+                dist_version       => '3.21',
                 build_requires     => {
                                        'Module::Build' => '0.28',
                                        'Test::More'    => '0.80',
@@ -46,15 +46,16 @@ my $builder =
                                        'File::Spec'                => '0.8',
                                       },
                 recommends         => {
-				       'Compress::Zlib'      => '2',
+                                       'Compress::Zlib'      => '2',
                                        'Test::Pod'           => '0',
                                        'Test::Pod::Coverage' => '0',
                                       },
+                script_files       => [ qw(imgsize) ],
                 add_to_cleanup     => [ qw(Image-Size-*
                                            ChangeLog
                                            MANIFEST
                                            MANIFEST.bak
-					   META.yml
+                                           META.yml
                                            Makefile.PL) ],
                 create_makefile_pl => 'traditional',
                 sign               => 'here, please',
