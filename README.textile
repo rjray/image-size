@@ -1,0 +1,139 @@
+h1. Image::Size - Determine the size of images in several common formats
+
+Version: 3.2 (See CHANGES below)
+
+h2. WHAT IS IT
+
+Image::Size is a library based on the image-sizing code in the wwwimagesize
+script, a tool that analyzes HTML files and adds HEIGHT and WIDTH tags to
+IMG directives. Image::Size has generalized that code to return a raw (X, Y)
+pair, and included wrappers to pre-format that output into either HTML or
+a set of attribute pairs suitable for the CGI.pm library by Lincoln Stein.
+Currently, Image::Size can size images in XPM, XBM, GIF, JPEG, PNG, MNG, TIFF,
+the PPM family of formats (PPM/PGM/PBM) and if Image::Magick is installed,
+the formats supported by it.
+
+I did this because my old WWW server generated a lot of documents on demand
+rather than keeping them in static files. These documents not only used
+directional icons and buttons, but other graphics to annotate and highlight
+sections of the text. Without size attributes, browsers cannot render the
+text of a page until the image data is loaded and the size known for layout.
+This library enables scripts to size their images at run-time and include
+that as part of the generated HTML. Or for any other utility that uses and
+manipulates graphics. The idea of the basic interface + wrappers is to not
+limit the programmer to a certain data format.
+
+
+h2. USING Image::Size IN YOUR SCRIPTS
+
+Image::Size has pod documentation that gives a more complete overview, but
+in a nutshell:
+
+<pre>
+<code>
+        use Image::Size;
+
+        ($x, $y) = imgsize("something.gif");
+</code>
+</pre>
+
+And ($x, $y) is now the width and height of something.gif. 95% of my usage of
+this library is in conjunction with Lincoln Stein's CGI.pm:
+
+<pre>
+<code>
+        use CGI ':all';
+        use Image::Size 'attr_imgsize';
+
+        #
+        # Emit an IMG tag with size attributes:
+        #
+        print img({-SRC => '/server/images/arrow.gif',
+                   attr_imgsize('/server_root/server/images/arrow.gif')});
+</code>
+</pre>
+
+Alternately, if you are running under Apache and mod_perl:
+
+<pre>
+<code>
+        # Assume $Q is an object of class CGI, $r is an Apache request object
+        $r->print($Q->img({ -src => $imgpath,
+                            attr_imgsize($r->lookup_uri($imgpath)->
+                                         filename) }));
+</code>
+</pre>
+
+h2. BUILDING/INSTALLING
+
+This package now uses the Module::Build system:
+
+<pre>
+<code>
+	perl Build.PL
+	./Build && ./Build test
+</code>
+</pre>
+
+If all tests pass, then:
+
+<pre>
+<code>
+	./Build install
+</code>
+</pre>
+
+You may need super-user access to install.
+
+There is a Makefile.PL provided for backwards compatibility:
+
+<pre>
+<code>
+        perl Makefile.PL
+        make && make test
+        make install
+</code>
+</pre>
+
+This simply wraps around the Build.PL file
+
+
+h2. PROBLEMS/BUG REPORTS
+
+Please send any reports of problems or bugs to rjray@blackperl.com.
+
+
+h2. CHANGES
+
+* lib/Image/Size.pm
+* t/all.t
+Make the package buildable in a pure-Perl software stack. Per   
+RT ticket #42930, make Compress::Zlib optional, so that those   
+who do not need it are not required to install it. Updated the  
+test around the compressed-SWF file to skip if Compress::Zlib   
+is absent.                                                      
+
+* Build.PL (restored)
+* ChangeLog (deleted)
+* ChangeLog.xml (added)
+* MANIFEST (deleted)
+* Makefile.PL (deleted)
+* README.Win32 (deleted)
+* etc/ChangeLogML.xsd (added)
+Making large-scale house-keeping changes to the build/dist      
+process. Replace ChangeLog (plain-text) with a ChangeLogML file 
+created from the CVS/SVN history and hand-adjusted; add the XSD 
+for ChangeLogML; restore Build.PL and heavily enhance; and      
+remove README.Win32, Makefile.PL and MANIFEST.                  
+
+* lib/Image/Size.pm
+Per RT ticket #43452, make the cache visible outside the        
+lexical scope of the module This allows the hash to be used     
+with packages like IPC::Shareable or IPC::MM to enable sharing  
+the cache between processes. Added extra documentation of this, 
+and a new section describing approaches to cache-sharing.       
+
+Transaction revision: 136
+* imgsize
+* lib/Image/Size.pm
+Fix URL/specification of the license info for LGPL.             
