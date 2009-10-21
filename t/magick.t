@@ -2,7 +2,7 @@
 
 # Tests related to Image::Magick and Graphics::Magick
 
-BEGIN: {
+BEGIN {
     use Test::More tests => 2;
     use_ok('Image::Size');
 }
