@@ -2,10 +2,11 @@
 
 # Tests related to Image::Magick and Graphics::Magick
 
-BEGIN {
-    use Test::More tests => 2;
-    use_ok('Image::Size');
-}
+use Test::More;
+
+use Image::Size;
+
+plan tests => 1;
 
 # This test should work whether or not Image::Magick is installed. 
 ok(!(exists $INC{'Image/Magick.pm'}),
