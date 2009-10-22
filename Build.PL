@@ -21,8 +21,14 @@ my $class =
 
             # Create the text ChangeLog
             $self->do_system('changelog2x',
-                             qw(--template text --input ChangeLog.xml),
-                             qw(--output ChangeLog));
+                             qw(--template text
+                                --input ChangeLog.xml
+                                --output ChangeLog));
+            # Create the text README
+            $self->do_system('textile2x',
+                             qw(--format plaintext
+                                --input README.textile
+                                --output README));
 
             $self->SUPER::ACTION_manifest();
             $self->SUPER::ACTION_dist();
@@ -36,7 +42,7 @@ my $builder =
                 dist_author        => 'Randy J. Ray <rjray@blackperl.com>',
                 dist_abstract      =>
                 'A library to extract height/width from images',
-                dist_version       => '3.21',
+                dist_version       => '3.210',
                 build_requires     => {
                                        'Module::Build' => '0.28',
                                        'Test::More'    => '0.80',
@@ -47,16 +53,24 @@ my $builder =
                                       },
                 recommends         => {
                                        'Compress::Zlib'      => '2',
-                                       'Test::Pod'           => '0',
-                                       'Test::Pod::Coverage' => '0',
                                       },
                 script_files       => [ qw(imgsize) ],
                 add_to_cleanup     => [ qw(Image-Size-*
                                            ChangeLog
+                                           README
                                            MANIFEST
                                            MANIFEST.bak
                                            META.yml
                                            Makefile.PL) ],
+                meta_merge         =>
+                {
+                 resources =>
+                 {
+                  homepage   => 'http://search.cpan.org/dist/Image-Size',
+                  bugtracker => 'http://rt.cpan.org/Public/Dist/Display.html?Name=Image-Size',
+                  repository => 'http://github.com/rjray/image-size',
+                 }
+                },
                 create_makefile_pl => 'traditional',
                 sign               => 'here, please',
                );

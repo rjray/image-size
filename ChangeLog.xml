@@ -13,6 +13,39 @@
     information from files in a wide variety of common (and not-so-common)
     formats.
   </description>
+  <release version="3.210" sc:tag="3.210" date="2009-10-21T18:50:00-07:00">
+    <change git:commit="4f12b06dd27f1f7b720acaea7a369c653e659206">
+      <file path="t/magick.t" />
+      <description>
+        Removed a stray colon causing errors with some Perl versions.
+      </description>
+    </change>
+    <change git:commit="175a683f3d568c418a94218702997da20d237fdd">
+      <fileset>
+        <file path="t/00_load.t" action="ADD" />
+        <file path="t/00_signature.t" action="DELETE" />
+        <file path="t/01_pod.t" action="ADD" />
+        <file path="t/02_pod_coverage.t" action="ADD" />
+        <file path="t/03_meta.t" action="ADD" />
+        <file path="t/04_minimumversion.t" action="ADD" />
+        <file path="t/05_critic.t" action="ADD" />
+        <file path="t/magick.t" />
+        <file path="t/pod.t" action="DELETE" />
+        <file path="t/pod_coverage.t" action="DELETE" />
+      </fileset>
+      <description>
+        Removed useless signature test, added QA tests, removed a duplicate
+        test.
+      </description>
+    </change>
+    <change git:commit="2c11bfe0c4df6b6201bce8c44b5763151dacf42c">
+      <file path="lib/Image/Size.pm" />
+      <description>
+        Moved around some conditionally-needed libs to delay loading
+        until/unless needed. Also made a small fix per Perl::Critic.
+      </description>
+    </change>
+  </release>
   <release version="3.2" date="2009-02-23T05:00:00-08:00" sc:tag="v3.2">
     <change git:commit="16dfa93026200cf00840f5ec721ac765644f72a7">
       <fileset>
