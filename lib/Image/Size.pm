@@ -23,9 +23,6 @@ require 5.006;
 use strict;
 use warnings;
 use bytes;
-use Cwd ();
-use File::Spec ();
-use Symbol ();
 use AutoLoader 'AUTOLOAD';
 require Exporter;
 
@@ -41,7 +38,7 @@ BEGIN
                       %CACHE $NO_CACHE $PCD_SCALE $GIF_BEHAVIOR);
     %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-    $VERSION = "3.2";
+    $VERSION = "3.210";
 
     # Default behavior for GIFs is to return the "screen" size
     $GIF_BEHAVIOR = 0;
@@ -170,6 +167,9 @@ sub imgsize
     {
         unless ($NO_CACHE)
         {
+            require Cwd;
+            require File::Spec;
+
             $stream = File::Spec->catfile(Cwd::cwd(),$stream)
                 unless File::Spec->file_name_is_absolute($stream);
             $mtime = (stat $stream)[9];
@@ -185,8 +185,9 @@ sub imgsize
         }
 
         #first try to open the stream
+        require Symbol;
         $handle = Symbol::gensym();
-        open($handle, "< $stream") or
+        open($handle, "<", $stream) or
             return (undef, undef, "Can't open image file $stream: $!");
 
         $need_close = 1;
@@ -275,7 +276,7 @@ sub imagemagick_size {
     }
 }
 
-# load Graphics::Magick or Image::Magick if one is not already loaded. 
+# load Graphics::Magick or Image::Magick if one is not already loaded.
 sub _load_magick_module {
     my $module_name = shift;
     eval {
@@ -772,6 +773,10 @@ L<http://cpanratings.perl.org/d/Image-Size>
 =item * Search CPAN
 
 L<http://search.cpan.org/dist/Image-Size>
+
+=item * Project page on GitHub
+
+L<http://github.com/rjray/image-size>
 
 =back
 
