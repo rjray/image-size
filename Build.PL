@@ -42,7 +42,7 @@ my $builder =
                 dist_author        => 'Randy J. Ray <rjray@blackperl.com>',
                 dist_abstract      =>
                 'A library to extract height/width from images',
-                dist_version       => '3.210',
+                dist_version       => '3.220',
                 build_requires     => {
                                        'Module::Build' => '0.28',
                                        'Test::More'    => '0.80',

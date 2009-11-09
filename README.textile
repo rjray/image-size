@@ -1,6 +1,6 @@
 h1. Image::Size - Determine the size of images in several common formats
 
-Version: 3.210 (See CHANGES below)
+Version: 3.220 (See CHANGES below)
 
 h2. WHAT IS IT
 
@@ -69,23 +69,6 @@ Please send any reports of problems or bugs to rjray@blackperl.com.
 
 h2. CHANGES
 
-* t/magick.t
-
-p{margin-bottom:2em}. Removed a stray colon causing errors with some Perl versions.
-
-* t/00_load.t (added)
-* t/00_signature.t (deleted)
-* t/01_pod.t (added)
-* t/02_pod_coverage.t (added)
-* t/03_meta.t (added)
-* t/04_minimumversion.t (added)
-* t/05_critic.t (added)
-* t/magick.t
-* t/pod.t (deleted)
-* t/pod_coverage.t (deleted)
-
-p{margin-bottom:2em}. Removed useless signature test, added QA tests, removed a duplicate test.
-
 * lib/Image/Size.pm
 
-p{margin-bottom:2em}. Moved around some conditionally-needed libs to delay loading until/unless needed. Also made a small fix per Perl::Critic.
+p{margin-bottom:2em}. Small fix to the regex for detecting GIFs, per Slaven Rezic.

@@ -13,6 +13,14 @@
     information from files in a wide variety of common (and not-so-common)
     formats.
   </description>
+  <release version="3.220" sc:tag="3.220" date="2009-11-08T17:45:00-08:00">
+    <change git:commit="85c84e5cdf9fdfd9cf878847a95d696f795e0fd7">
+      <file path="lib/Image/Size.pm" />
+      <description>
+        Small fix to the regex for detecting GIFs, per Slaven Rezic.
+      </description>
+    </change>
+  </release>
   <release version="3.210" sc:tag="3.210" date="2009-10-21T18:50:00-07:00">
     <change git:commit="4f12b06dd27f1f7b720acaea7a369c653e659206">
       <file path="t/magick.t" />
