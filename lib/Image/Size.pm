@@ -38,7 +38,8 @@ BEGIN
                       %CACHE $NO_CACHE $PCD_SCALE $GIF_BEHAVIOR);
     %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-    $VERSION = "3.210";
+    $VERSION = "3.220";
+	$VERSION = eval $VERSION; ## no critic
 
     # Default behavior for GIFs is to return the "screen" size
     $GIF_BEHAVIOR = 0;
@@ -51,7 +52,7 @@ $NO_CACHE = 0;
 # Package lexicals - invisible to outside world, used only in imgsize
 #
 # Mapping of patterns to the sizing routines
-my %type_map = ( '^GIF8[7,9]a'              => \&gifsize,
+my %type_map = ( '^GIF8[79]a'               => \&gifsize,
                  "^\xFF\xD8"                => \&jpegsize,
                  "^\x89PNG\x0d\x0a\x1a\x0a" => \&pngsize,
                  "^P[1-7]"                  => \&ppmsize, # also XVpics
