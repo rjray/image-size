@@ -71,4 +71,5 @@ h2. CHANGES
 
 * imgsize
 * lib/Image/Size.pm
+
 p{margin-bottom:2em}. Large-scale code and documentation clean-up based on perlcritic and visual review.
