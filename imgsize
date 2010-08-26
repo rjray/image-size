@@ -102,7 +102,7 @@ imgsize - read the dimensions of an image in several popular formats
 =head1 DESCRIPTION
 
 No-brainer to size an image supplied on the command-line. All the real
-work is done in L<Image::Size>.
+work is done in L<Image::Size|Image::Size>.
 
 =head1 REQUIRED ARGUMENTS
 
@@ -130,7 +130,7 @@ Return "raw" format data. Just the numbers separated by a single space.
 =item C<-a>
 
 Return a Perl-style list of attributes suitable for passing to the C<img()>
-method of the CGI module (see L<CGI>).
+method of the CGI module (see L<CGI|CGI>).
 
 =item C<-f> B<fmt>
 
@@ -187,7 +187,7 @@ the GNU LGPL 2.1 (L<http://www.opensource.org/licenses/lgpl-2.1.php>).
 
 =head1 SEE ALSO
 
-L<Image::Size>
+L<Image::Size|Image::Size>
 
 =head1 AUTHOR
 

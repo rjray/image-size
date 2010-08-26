@@ -63,7 +63,7 @@ $NO_CACHE = 0;
     qr{^\x89PNG\x0d\x0a\x1a\x0a} => \&pngsize,
     qr{^P[1-7]}                  => \&ppmsize, # also XVpics
     qr{#define\s+\S+\s+\d+}      => \&xbmsize,
-    qr{/\* XPM \*/}              => \&xpmsize,
+    qr{/[*] XPM [*]/}            => \&xpmsize,
     qr{^MM\x00\x2a}              => \&tiffsize,
     qr{^II\x2a\x00}              => \&tiffsize,
     qr{^BM}                      => \&bmpsize,
@@ -349,11 +349,17 @@ sub img_eof
     return eof $stream;
 }
 
+# "no critic" because this private routine is only used by auto-loaded code,
+# which Perl::Critic can't detect
+## no critic (ProhibitUnusedPrivateSubroutines)
 # Simple converter-routine used by SWF and CWS code
 sub _bin2int
 {
     my $val = shift;
-    return unpack 'N', pack 'B32', substr(('0' x 32) . $val, -32); ## no critic (ProhibitParensWithBuiltins)
+    # "no critic" because I want it clear which args are being used by
+    # substr() versus unpack().
+    ## no critic (ProhibitParensWithBuiltins)
+    return unpack 'N', pack 'B32', substr(('0' x 32) . $val, -32);
 }
 
 1;
@@ -550,7 +556,7 @@ for this, as it would add to the list of dependencies.
 To make it possible for users to do this themselves, the C<%CACHE> hash-table
 that B<Image::Size> uses internally for storage may be imported in the B<use>
 statement. The user may then make use of packages such as B<IPC::MMA>
-(L<IPC::MMA>) that can C<tie> a hash to a shared-memory segment:
+(L<IPC::MMA|IPC::MMA>) that can C<tie> a hash to a shared-memory segment:
 
     use Image::Size qw(imgsize %CACHE);
     use IPC::MMA;
@@ -687,14 +693,14 @@ package name:
 
     tie %Image::Size::CACHE, 'IPC::Shareable', 'size', { create => 1 };
 
-That example uses B<IPC::Shareable> (see L<IPC::Shareable>) and uses the option
-to the C<tie> command that tells B<IPC::Shareable> to create the segment. Once
-the initial server process starts to create children, they will all share the
-tied handle to the memory segment.
+That example uses B<IPC::Shareable> (see L<IPC::Shareable|IPC::Shareable>) and
+uses the option to the C<tie> command that tells B<IPC::Shareable> to create
+the segment. Once the initial server process starts to create children, they
+will all share the tied handle to the memory segment.
 
 Another package that provides this capability is B<IPC::MMA> (see
-L<IPC::MMA>), which provides shared memory management via the I<mm> library
-from Ralf Engelschall (details available in the documentation for
+L<IPC::MMA|IPC::MMA>), which provides shared memory management via the I<mm>
+library from Ralf Engelschall (details available in the documentation for
 B<IPC::MMA>):
 
     use IPC::MMA;
@@ -758,8 +764,9 @@ restricted to cases where the input to C<imgsize> is provided as file name.
 
 =head1 SEE ALSO
 
-L<Image::Magick> and L<Image::Info> Perl modules at CPAN. The
-B<Graphics::Magick> Perl API at L<http://www.graphicsmagick.org/perl.html>.
+L<Image::Magick|Image::Magick> and L<Image::Info|Image::Info> Perl modules at
+CPAN. The B<Graphics::Magick> Perl API at
+L<http://www.graphicsmagick.org/perl.html>.
 
 =head1 CONTRIBUTORS
 
