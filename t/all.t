@@ -2,7 +2,7 @@
 
 use IO::File;
 use Image::Size qw(:all);
-use Test::More tests => 17;
+use Test::More tests => 18;
 
 # We now only test the CWS branch if the user already has Compress::Zlib
 # available. We no longer require it for installation.
@@ -56,6 +56,10 @@ ok(($x == 64 && $y == 38 && $id eq 'BMP'), 'Basic BMP format test');
 # Test SWF code from Dmitry Dorofeev <dima@yasp.com>
 ($x, $y, $id) = imgsize("${dir}yasp.swf");
 ok(($x == 85 && $y == 36 && $id eq 'SWF'), 'Basic SWF format test');
+
+# Test EMF code
+($x, $y, $id) = imgsize("${dir}Test_emf_small.emf");
+ok(($x == 638 && $y == 949 && $id eq 'EMF'), 'Basic EMF format test');
 
 SKIP: {
     skip 'Compress::Zlib not installed', 1 unless $do_cws_test;

@@ -72,6 +72,7 @@ $NO_CACHE = 0;
     qr{^FWS}                     => \&swfsize,
     qr{^CWS}                     => \&swfmxsize,
     qr{^\x8aMNG\x0d\x0a\x1a\x0a} => \&mngsize,
+    qr{^\x01\x00\x00\x00}        => \&emfsize,
 );
 # Kodak photo-CDs are weird. Don't ask me why, you really don't want details.
 %PCD_MAP = ( 'base/16' => [ 192,  128  ],
@@ -505,6 +506,8 @@ Image::Size natively understands and sizes data in the following formats:
 =item CWS (FlashMX, compressed SWF, Flash 6)
 
 =item PCD (Kodak PhotoCD, see notes below)
+
+=item EMF (Windows Enhanced Metafile Format)
 
 =back
 
@@ -1361,4 +1364,22 @@ sub swfmxsize
     my $y = int _bin2int(substr $bs, 5+$bits*3, $bits)/20;
 
     return ($x, $y, 'CWS');
+}
+
+# Windows EMF files, requested by Jan v/d Zee
+sub emfsize
+{
+    my $image = shift;
+
+    my ($x, $y);
+    my $buffer = $READ_IN->($image, 24);
+
+    my ($x1, $y1, $x2, $y2) = unpack 'x8VVVV', $buffer;
+
+    # The four values describe a box *around* the image, not *of* the image.
+    # In other words, the dimensions are not inclusive.
+    $x = $x2 - $x1 - 1;
+    $y = $y2 - $y1 - 1;
+
+    return ($x, $y, 'EMF');
 }
