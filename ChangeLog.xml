@@ -13,6 +13,47 @@
     information from files in a wide variety of common (and not-so-common)
     formats.
   </description>
+  <release version="3.230" sc:tag="3.230" date="2010-08-29T16:00:00-07:00">
+    <change git:commit="269c8932ccabf981d7723ee86c5e1ac49f361ece">
+      <fileset>
+        <file path="imgsize" />
+        <file path="lib/Image/Size.pm" />
+      </fileset>
+      <description>
+        perlcritic clean-ups from new rules.
+      </description>
+    </change>
+    <change git:commit="f2ec9f0313a692b5f87b778e38b3bd9641beb922">
+      <fileset>
+        <file path="lib/Image/Size.pm" />
+        <file path="t/Test_emf_small.emf" action="ADD" />
+        <file path="t/all.t" />
+      </fileset>
+      <description>
+        <xhtml:a href="http://rt.cpan.org/Ticket/Display.html?id=59995">RT #59995</xhtml:a>:
+        Added support for Windows Enhanced Metafile Format (EMF).
+      </description>
+    </change>
+    <change git:commit="3ed01fd7bff2cd551f399d9a37d1f96c5330be1f">
+      <fileset>
+        <file path="t/00_load.t" action="DELETE" />
+        <file path="t/01_pod.t" action="DELETE" />
+        <file path="t/02_pod_coverage.t" action="DELETE" />
+        <file path="t/03_meta.t" action="DELETE" />
+        <file path="t/04_minimumversion.t" action="DELETE" />
+        <file path="t/05_critic.t" action="DELETE" />
+        <file path="xt/00_load.t" action="ADD" />
+        <file path="xt/01_pod.t" action="ADD" />
+        <file path="xt/02_pod_coverage.t" action="ADD" />
+        <file path="xt/03_meta.t" action="ADD" />
+        <file path="xt/04_minimumversion.t" action="ADD" />
+        <file path="xt/05_critic.t" action="ADD" />
+      </fileset>
+      <description>
+        Move the author/distro-sanity tests to an "xt" directory.
+      </description>
+    </change>
+  </release>
   <release version="3.221" sc:tag="3.221" date="2010-04-25T14:10:00-07:00">
     <change git:commit="45914d2c9da36b21d4262627231d41f0203a81cc">
       <fileset>
@@ -73,7 +114,7 @@
         <file path="t/all.t" />
       </fileset>
       <description>
-        Make the package buildable in a pure-Perl software stack.  Per
+        Make the package buildable in a pure-Perl software stack. Per
         <xhtml:a href="http://rt.cpan.org/Ticket/Display.html?id=42930">RT ticket #42930</xhtml:a>,
         make Compress::Zlib optional, so that those who do not need
         it are not required to install it. Updated the test around the

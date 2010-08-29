@@ -1,6 +1,6 @@
 h1. Image::Size - Determine the size of images in several common formats
 
-Version: 3.221 (See CHANGES below)
+Version: 3.230 (See CHANGES below)
 
 h2. WHAT IS IT
 
@@ -72,4 +72,25 @@ h2. CHANGES
 * imgsize
 * lib/Image/Size.pm
 
-p{margin-bottom:2em}. Large-scale code and documentation clean-up based on perlcritic and visual review.
+p{margin-bottom:2em}. perlcritic clean-ups from new rules.
+
+* lib/Image/Size.pm
+* t/Test_emf_small.emf (added)
+* t/all.t
+
+p{margin-bottom:2em}. RT #59995: Added support for Windows Enhanced Metafile Format (EMF).
+
+* t/00_load.t (deleted)
+* t/01_pod.t (deleted)
+* t/02_pod_coverage.t (deleted)
+* t/03_meta.t (deleted)
+* t/04_minimumversion.t (deleted)
+* t/05_critic.t (deleted)
+* xt/00_load.t (added)
+* xt/01_pod.t (added)
+* xt/02_pod_coverage.t (added)
+* xt/03_meta.t (added)
+* xt/04_minimumversion.t (added)
+* xt/05_critic.t (added)
+
+p{margin-bottom:2em}. Move the author/distro-sanity tests to an "xt" directory.
