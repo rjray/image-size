@@ -18,7 +18,7 @@
 
 package Image::Size;
 
-require 5.006;
+require 5.006001;
 
 # These are the Perl::Critic policies that are being turned off globally:
 ## no critic(RequireBriefOpen)
@@ -44,7 +44,7 @@ BEGIN
                       %CACHE $NO_CACHE $PCD_SCALE $GIF_BEHAVIOR);
     %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-    $VERSION = '3.230';
+    $VERSION = '3.231';
     $VERSION = eval $VERSION; ## no critic(ProhibitStringyEval)
 
     # Default behavior for GIFs is to return the "screen" size
@@ -1374,7 +1374,7 @@ sub emfsize
     my ($x, $y);
     my $buffer = $READ_IN->($image, 24);
 
-    my ($x1, $y1, $x2, $y2) = unpack 'x8VVVV', $buffer;
+    my ($x1, $y1, $x2, $y2) = unpack 'x8V!4', $buffer;
 
     # The four values describe a box *around* the image, not *of* the image.
     # In other words, the dimensions are not inclusive.
