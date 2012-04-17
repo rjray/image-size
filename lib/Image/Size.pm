@@ -794,7 +794,7 @@ supplied the PSD (PhotoShop) code, a bug was identified by Alex Weslowski
 was adapted from a script made available by Phil Greenspun, as guided to my
 attention by Matt Mueller I<mueller@wetafx.co.nz>. A thorough read of the
 documentation and source by Philip Newton I<Philip.Newton@datenrevision.de>
-found several typos and a small buglet. Ville Skyttä I<(ville.skytta@iki.fi)>
+found several typos and a small buglet. Ville Skyttï¿½ I<(ville.skytta@iki.fi)>
 provided the MNG and the Image::Magick fallback code. Craig MacKenna
 I<(mackenna@animalhead.com)> suggested making the cache available so that it
 could be used with shared memory, and helped test my change before release.
@@ -1358,7 +1358,7 @@ sub swfmxsize
     $header = substr $header, 8, 1024;
     $header = $d->inflate($header);
 
-    my $bs = unpack 'B133', substr $header, 0, 9;
+    my $bs = unpack 'B133', substr $header, 0, 17;
     my $bits = _bin2int(substr $bs, 0, 5);
     my $x = int _bin2int(substr $bs, 5+$bits, $bits)/20;
     my $y = int _bin2int(substr $bs, 5+$bits*3, $bits)/20;
