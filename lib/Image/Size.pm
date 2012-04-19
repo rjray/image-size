@@ -794,7 +794,7 @@ supplied the PSD (PhotoShop) code, a bug was identified by Alex Weslowski
 was adapted from a script made available by Phil Greenspun, as guided to my
 attention by Matt Mueller I<mueller@wetafx.co.nz>. A thorough read of the
 documentation and source by Philip Newton I<Philip.Newton@datenrevision.de>
-found several typos and a small buglet. Ville Skyttä I<(ville.skytta@iki.fi)>
+found several typos and a small buglet. Ville Skyttï¿½ I<(ville.skytta@iki.fi)>
 provided the MNG and the Image::Magick fallback code. Craig MacKenna
 I<(mackenna@animalhead.com)> suggested making the cache available so that it
 could be used with shared memory, and helped test my change before release.
@@ -1087,7 +1087,7 @@ sub jpegsize
 {
     my $stream = shift;
 
-    my $MARKER     = chr 0xff; # Section marker
+    my $MARKER     = 0xff; # Section marker
 
     my $SIZE_FIRST = 0xC0;   # Range of segment identifier codes
     my $SIZE_LAST  = 0xC3;   #  that hold size info.
@@ -1105,21 +1105,33 @@ sub jpegsize
         $segheader = $READ_IN->($stream, $length);
 
         # Extract the segment header.
-        ($marker, $code, $length) = unpack 'a a n', $segheader;
+        ($marker, $code, $length) = unpack 'C C n', $segheader;
 
         # Verify that it's a valid segment.
-        if ($marker ne $MARKER)
+        if ($marker != $MARKER)
         {
             # Was it there?
             $id = 'JPEG marker not found';
             last;
         }
-        elsif ((ord($code) >= $SIZE_FIRST) && (ord($code) <= $SIZE_LAST))
+        while ($code == $MARKER) {
+            # Padding - glide across it
+            my $byte = $READ_IN->($stream, 1);
+            last if $byte eq qq{};
+            $segheader = substr($segheader, 1, 3) . $byte;
+            ($marker, $code, $length) = unpack 'C C n', $segheader;
+        }
+        if (($code >= $SIZE_FIRST) && ($code <= $SIZE_LAST))
         {
             # Segments that contain size info
             $length = 5;
             ($y, $x) = unpack 'xnn', $READ_IN->($stream, $length);
             $id = 'JPG';
+            last;
+        }
+        elsif (code == 0xDA)
+        {
+            # Start Of Stream marker - we won't find size anymoe
             last;
         }
         else
@@ -1128,7 +1140,6 @@ sub jpegsize
             $READ_IN->($stream, ($length - 2));
         }
     }
-
     return ($x, $y, $id);
 }
 
