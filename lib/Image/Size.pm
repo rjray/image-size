@@ -33,7 +33,6 @@ use vars qw(
     $GIF_BEHAVIOR @TYPE_MAP %PCD_MAP $PCD_SCALE $READ_IN $LAST_POS
 );
 
-use AutoLoader 'AUTOLOAD';
 use Exporter;
 
 BEGIN
@@ -99,15 +98,15 @@ my $read_io = sub {
         return q{} if (! seek $handle, $offset, 0);
     }
 
-    my ($data, $rtn) = (q{}, 0);
-    $rtn = read $handle, $data, $length;
+    my ($buffer, $rtn) = (q{}, 0);
+    $rtn = read $handle, $buffer, $length;
     if (! $rtn)
     {
-        $data = q{};
+        $buffer = q{};
     }
     $LAST_POS = tell $handle;
 
-    $data;
+    return $buffer;
 };
 
 my $read_buf = sub {
@@ -120,10 +119,10 @@ my $read_buf = sub {
         return q{} if ($LAST_POS > length ${$buf});
     }
 
-    my $data = substr ${$buf}, $LAST_POS, $length;
-    $LAST_POS += length $data;
+    my $content = substr ${$buf}, $LAST_POS, $length;
+    $LAST_POS += length $content;
 
-    $data;
+    return $content;
 };
 
 sub imgsize ## no critic(ProhibitExcessComplexity)
@@ -213,13 +212,10 @@ sub imgsize ## no critic(ProhibitExcessComplexity)
     }
     $LAST_POS = 0;
 
-    # Oh pessimism... set the values of $x and $y to the error condition. If
-    # the grep() below matches the data to one of the known types, then the
-    # called subroutine will override these...
-    $id = 'Data stream is not a known image file format';
-    $x  = undef;
-    $y  = undef;
-
+    # Right now, $x, $y and $id are undef. If the while-loop below doesn't
+    # match the header to a file-type and call a subroutine, then the later
+    # block that tried Image::Magick will default to setting the id/error to
+    # "unknown file type".
     my $tm_idx = 0;
     while ($tm_idx < @TYPE_MAP)
     {
@@ -250,12 +246,18 @@ sub imgsize ## no critic(ProhibitExcessComplexity)
         close $handle; ## no critic(RequireCheckedClose)
     }
 
-    # Image::Magick operates on file names.
-    if ($file_name && (! defined $x) && (! defined $y))
+    if (! defined $id)
     {
-        ($x, $y, $id) = imagemagick_size($file_name);
+        if ($file_name)
+        {
+            # Image::Magick operates on file names.
+            ($x, $y, $id) = imagemagick_size($file_name);
+        }
+        else
+        {
+            $id = 'Data stream is not a known image file format';
+        }
     }
-
 
     # results:
     return (wantarray) ? ($x, $y, $id) : ();
@@ -350,9 +352,6 @@ sub img_eof
     return eof $stream;
 }
 
-# "no critic" because this private routine is only used by auto-loaded code,
-# which Perl::Critic can't detect
-## no critic (ProhibitUnusedPrivateSubroutines)
 # Simple converter-routine used by SWF and CWS code
 sub _bin2int
 {
@@ -361,6 +360,555 @@ sub _bin2int
     # substr() versus unpack().
     ## no critic (ProhibitParensWithBuiltins)
     return unpack 'N', pack 'B32', substr(('0' x 32) . $val, -32);
+}
+
+###########################################################################
+# Subroutine gets the size of the specified GIF
+###########################################################################
+sub gifsize
+{
+    my $stream = shift;
+
+    # We use bitwise-and here:
+    ## no critic(ProhibitBitwiseOperators)
+
+    my ($cmapsize, $buf, $sh, $sw, $x, $y, $type);
+
+    my $gif_blockskip = sub {
+        my ($skip, $blocktype) = @_;
+        my ($lbuf);
+
+        $READ_IN->($stream, $skip);        # Skip header (if any)
+        while (1)
+        {
+            if (img_eof($stream))
+            {
+                return (undef, undef,
+                        "Invalid/Corrupted GIF (at EOF in GIF $blocktype)");
+            }
+            $lbuf = $READ_IN->($stream, 1);  # Block size
+            last if ord($lbuf) == 0;         # Block terminator
+            $READ_IN->($stream, ord $lbuf);  # Skip data
+        }
+    };
+
+    if ($GIF_BEHAVIOR > 2)
+    {
+        return (undef, undef,
+                "\$Image::Size::GIF_BEHAVIOR out of range: $GIF_BEHAVIOR");
+    }
+
+    # Skip over the identifying string, since we already know this is a GIF
+    $type = $READ_IN->($stream, 6);
+    if (length($buf = $READ_IN->($stream, 7)) != 7 )
+    {
+        return (undef, undef, 'Invalid/Corrupted GIF (bad header)');
+    }
+    ($sw, $sh, $x) = unpack 'vv C', $buf;
+    if ($GIF_BEHAVIOR == 0)
+    {
+        return ($sw, $sh, 'GIF');
+    }
+
+    if ($x & 0x80)
+    {
+        $cmapsize = 3 * (2**(($x & 0x07) + 1));
+        if (! $READ_IN->($stream, $cmapsize))
+        {
+            return (undef, undef,
+                    'Invalid/Corrupted GIF (global color map too small?)');
+        }
+    }
+
+    # Before we start this loop, set $sw and $sh to 0s and use them to track
+    # the largest sub-image in the overall GIF.
+    $sw = $sh = 0;
+
+  FINDIMAGE:
+    while (1)
+    {
+        if (img_eof($stream))
+        {
+            # At this point, if we haven't returned then the user wants the
+            # largest of the sub-images. So, if $sh and $sw are still 0s, then
+            # we didn't see even one Image Descriptor block. Otherwise, return
+            # those two values.
+            if ($sw and $sh)
+            {
+                return ($sw, $sh, 'GIF');
+            }
+            else
+            {
+                return (undef, undef,
+                        'Invalid/Corrupted GIF (no Image Descriptors)');
+            }
+        }
+        $buf = $READ_IN->($stream, 1);
+        ($x) = unpack 'C', $buf;
+        if ($x == 0x2c)
+        {
+            # Image Descriptor (GIF87a, GIF89a 20.c.i)
+            if (length($buf = $READ_IN->($stream, 8)) != 8)
+            {
+                return (undef, undef,
+                        'Invalid/Corrupted GIF (missing image header?)');
+            }
+            ($x, $y) = unpack 'x4 vv', $buf;
+            return ($x, $y, 'GIF') if ($GIF_BEHAVIOR == 1);
+            if ($x > $sw and $y > $sh)
+            {
+                $sw = $x;
+                $sh = $y;
+            }
+        }
+        if ($x == 0x21)
+        {
+            # Extension Introducer (GIF89a 23.c.i, could also be in GIF87a)
+            $buf = $READ_IN->($stream, 1);
+            ($x) = unpack 'C', $buf;
+            if ($x == 0xF9)
+            {
+                # Graphic Control Extension (GIF89a 23.c.ii)
+                $READ_IN->($stream, 6);    # Skip it
+                next FINDIMAGE;       # Look again for Image Descriptor
+            }
+            elsif ($x == 0xFE)
+            {
+                # Comment Extension (GIF89a 24.c.ii)
+                $gif_blockskip->(0, 'Comment');
+                next FINDIMAGE;       # Look again for Image Descriptor
+            }
+            elsif ($x == 0x01)
+            {
+                # Plain Text Label (GIF89a 25.c.ii)
+                $gif_blockskip->(13, 'text data');
+                next FINDIMAGE;       # Look again for Image Descriptor
+            }
+            elsif ($x == 0xFF)
+            {
+                # Application Extension Label (GIF89a 26.c.ii)
+                $gif_blockskip->(12, 'application data');
+                next FINDIMAGE;       # Look again for Image Descriptor
+            }
+            else
+            {
+                return (undef, undef,
+                        sprintf 'Invalid/Corrupted GIF (Unknown ' .
+                                'extension %#x)', $x);
+            }
+        }
+        else
+        {
+            return (undef, undef,
+                    sprintf 'Invalid/Corrupted GIF (Unknown code %#x)', $x);
+        }
+    }
+
+    return (undef, undef, 'gifsize fell through to the end, error');
+}
+
+sub xbmsize
+{
+    my $stream = shift;
+
+    my $input;
+    my ($x, $y, $id) = (undef, undef, 'Could not determine XBM size');
+
+    $input = $READ_IN->($stream, 1024);
+    if ($input =~ /^\#define\s*\S*\s*(\d+)\s*\n\#define\s*\S*\s*(\d+)/ix)
+    {
+        ($x, $y) = ($1, $2);
+        $id = 'XBM';
+    }
+
+    return ($x, $y, $id);
+}
+
+# Added by Randy J. Ray, 30 Jul 1996
+# Size an XPM file by looking for the "X Y N W" line, where X and Y are
+# dimensions, N is the total number of colors defined, and W is the width of
+# a color in the ASCII representation, in characters. We only care about X & Y.
+sub xpmsize
+{
+    my $stream = shift;
+
+    my $line;
+    my ($x, $y, $id) = (undef, undef, 'Could not determine XPM size');
+
+    while ($line = $READ_IN->($stream, 1024))
+    {
+        if ($line =~ /"\s*(\d+)\s+(\d+)(\s+\d+\s+\d+){1,2}\s*"/)
+        {
+            ($x, $y) = ($1, $2);
+            $id = 'XPM';
+            last;
+        }
+    }
+
+    return ($x, $y, $id);
+}
+
+# pngsize : gets the width & height (in pixels) of a png file
+# cor this program is on the cutting edge of technology! (pity it's blunt!)
+#
+# Re-written and tested by tmetro@vl.com
+sub pngsize
+{
+    my $stream = shift;
+
+    my ($x, $y, $id) = (undef, undef, 'Could not determine PNG size');
+    my ($offset, $length);
+
+    # Offset to first Chunk Type code = 8-byte ident + 4-byte chunk length + 1
+    $offset = 12; $length = 4;
+    if ($READ_IN->($stream, $length, $offset) eq 'IHDR')
+    {
+        # IHDR = Image Header
+        $length = 8;
+        ($x, $y) = unpack 'NN', $READ_IN->($stream, $length);
+        $id = 'PNG';
+    }
+
+    return ($x, $y, $id);
+}
+
+# mngsize: gets the width and height (in pixels) of an MNG file.
+# See <URL:http://www.libpng.org/pub/mng/spec/> for the specification.
+#
+# Basically a copy of pngsize.
+sub mngsize
+{
+    my $stream = shift;
+
+    my ($x, $y, $id) = (undef, undef, 'Could not determine MNG size');
+    my ($offset, $length);
+
+    # Offset to first Chunk Type code = 8-byte ident + 4-byte chunk length + 1
+    $offset = 12; $length = 4;
+    if ($READ_IN->($stream, $length, $offset) eq 'MHDR')
+    {
+        # MHDR = Image Header
+        $length = 8;
+        ($x, $y) = unpack 'NN', $READ_IN->($stream, $length);
+        $id = 'MNG';
+    }
+
+    return ($x, $y, $id);
+}
+
+# jpegsize: gets the width and height (in pixels) of a jpeg file
+# Andrew Tong, werdna@ugcs.caltech.edu           February 14, 1995
+# modified slightly by alex@ed.ac.uk
+# and further still by rjray@blackperl.com
+# optimization and general re-write from tmetro@vl.com
+sub jpegsize
+{
+    my $stream = shift;
+
+    my $MARKER     = chr 0xff; # Section marker
+
+    my $SIZE_FIRST = 0xC0;   # Range of segment identifier codes
+    my $SIZE_LAST  = 0xC3;   #  that hold size info.
+
+    my ($x, $y, $id) = (undef, undef, 'Could not determine JPEG size');
+
+    my ($marker, $code, $length);
+    my $segheader;
+
+    # Dummy read to skip header ID
+    $READ_IN->($stream, 2);
+    while (1)
+    {
+        $segheader = $READ_IN->($stream, 2);
+
+        # Extract the segment header.
+        ($marker, $code) = unpack 'a a', $segheader;
+
+        while ( $code eq $MARKER && ($marker = $code) ) {
+            $segheader = $READ_IN->($stream, 1);
+            ($code) = unpack 'a', $segheader;
+        }
+        $segheader = $READ_IN->($stream, 2);
+        $length = unpack 'n', $segheader;
+
+        # Verify that it's a valid segment.
+        if ($marker ne $MARKER)
+        {
+            # Was it there?
+            $id = 'JPEG marker not found';
+            last;
+        }
+        elsif ((ord($code) >= $SIZE_FIRST) && (ord($code) <= $SIZE_LAST))
+        {
+            # Segments that contain size info
+            ($y, $x) = unpack 'xnn', $READ_IN->($stream, 5);
+            $id = 'JPG';
+            last;
+        }
+        else
+        {
+            # Dummy read to skip over data
+            $READ_IN->($stream, ($length - 2));
+        }
+    }
+
+    return ($x, $y, $id);
+}
+
+# ppmsize: gets data on the PPM/PGM/PBM family.
+#
+# Contributed by Carsten Dominik <dominik@strw.LeidenUniv.nl>
+sub ppmsize
+{
+    my $stream = shift;
+
+    my ($x, $y, $id) =
+        (undef, undef, 'Unable to determine size of PPM/PGM/PBM data');
+    my $n;
+    my @table = qw(nil PBM PGM PPM PBM PGM PPM);
+
+    my $header = $READ_IN->($stream, 1024);
+
+    # PPM file of some sort
+    $header =~ s/^\#.*//mg;
+    if ($header =~ /^(?:P([1-7]))\s+(\d+)\s+(\d+)/)
+    {
+        ($n, $x, $y) = ($1, $2, $3);
+
+        if ($n == 7)
+        {
+            # John Bradley's XV thumbnail pics (from inwap@jomis.Tymnet.COM)
+            $id = 'XV';
+            ($x, $y) = ($header =~ /IMGINFO:(\d+)x(\d+)/s);
+        }
+        else
+        {
+            $id = $table[$n];
+        }
+    }
+
+    return ($x, $y, $id);
+}
+
+# tiffsize: size a TIFF image
+#
+# Contributed by Cloyce Spradling <cloyce@headgear.org>
+sub tiffsize
+{
+    my $stream = shift;
+
+    my ($x, $y, $id) = (undef, undef, 'Unable to determine size of TIFF data');
+
+    my $endian = 'n';           # Default to big-endian; I like it better
+    my $header = $READ_IN->($stream, 4);
+    if ($header =~ /II\x2a\x00/o)
+    {
+        # little-endian
+        $endian = 'v';
+    }
+
+    # Set up an association between data types and their corresponding
+    # pack/unpack specification.  Don't take any special pains to deal with
+    # signed numbers; treat them as unsigned because none of the image
+    # dimensions should ever be negative. (I hope.)
+    my @packspec = ( undef,      # nothing (shouldn't happen)
+                     'C',        # BYTE (8-bit unsigned integer)
+                     undef,      # ASCII
+                     $endian,    # SHORT (16-bit unsigned integer)
+                     uc $endian, # LONG (32-bit unsigned integer)
+                     undef,      # RATIONAL
+                     'c',        # SBYTE (8-bit signed integer)
+                     undef,      # UNDEFINED
+                     $endian,    # SSHORT (16-bit unsigned integer)
+                     uc $endian, # SLONG (32-bit unsigned integer)
+                     );
+
+    my $offset = $READ_IN->($stream, 4, 4); # Get offset to IFD
+    $offset = unpack uc $endian, $offset; # Fix it so we can use it
+
+    my $ifd = $READ_IN->($stream, 2, $offset); # Get num. of directory entries
+    my $num_dirent = unpack $endian, $ifd; # Make it useful
+    $offset += 2;
+    $num_dirent = $offset + ($num_dirent * 12); # Calc. maximum offset of IFD
+
+    # Do all the work
+    $ifd = q{};
+    my $tag = 0;
+    my $type = 0;
+    while ((! defined $x) || (! defined$y)) {
+        $ifd = $READ_IN->($stream, 12, $offset);   # Get first directory entry
+        last if (($ifd eq q{}) || ($offset > $num_dirent));
+        $offset += 12;
+        $tag = unpack $endian, $ifd;               # ...and decode its tag
+        $type = unpack $endian, substr $ifd, 2, 2; # ...and the data type
+        # Check the type for sanity.
+        next if (($type > @packspec+0) || (! defined $packspec[$type]));
+        if ($tag == 0x0100)    # ImageWidth (x)
+        {
+            # Decode the value
+            $x = unpack $packspec[$type], substr $ifd, 8, 4;
+        }
+        elsif ($tag == 0x0101) # ImageLength (y)
+        {
+            # Decode the value
+            $y = unpack $packspec[$type], substr $ifd, 8, 4;
+        }
+    }
+
+    # Decide if we were successful or not
+    if (defined $x and defined $y)
+    {
+        $id = 'TIF';
+    }
+    else
+    {
+        $id = q{};
+        if (! defined $x)
+        {
+            $id = 'ImageWidth ';
+        }
+        if (! defined $y)
+        {
+            if ($id ne q{})
+            {
+                $id .= 'and ';
+            }
+            $id .= 'ImageLength ';
+        }
+        $id .= 'tag(s) could not be found';
+    }
+
+    return ($x, $y, $id);
+}
+
+# bmpsize: size a Windows-ish BitMaP image
+#
+# Adapted from code contributed by Aldo Calpini <a.calpini@romagiubileo.it>
+sub bmpsize
+{
+    my $stream = shift;
+
+    my ($x, $y, $id) = (undef, undef, 'Unable to determine size of BMP data');
+    my $buffer;
+
+    $buffer = $READ_IN->($stream, 26);
+    ($x, $y) = unpack 'x18VV', $buffer;
+    if (defined $x and defined $y)
+    {
+        $id = 'BMP';
+    }
+
+    return ($x, $y, $id);
+}
+
+# psdsize: determine the size of a PhotoShop save-file (*.PSD)
+sub psdsize
+{
+    my $stream = shift;
+
+    my ($x, $y, $id) = (undef, undef, 'Unable to determine size of PSD data');
+    my $buffer;
+
+    $buffer = $READ_IN->($stream, 26);
+    ($y, $x) = unpack 'x14NN', $buffer;
+    if (defined $x and defined $y)
+    {
+        $id = 'PSD';
+    }
+
+    return ($x, $y, $id);
+}
+
+# swfsize: determine size of ShockWave/Flash files. Adapted from code sent by
+# Dmitry Dorofeev <dima@yasp.com>
+sub swfsize
+{
+    my $image  = shift;
+    my $header = $READ_IN->($image, 33);
+
+    my $ver = _bin2int(unpack 'B8', substr $header, 3, 1);
+    my $bs = unpack 'B133', substr $header, 8, 17;
+    my $bits = _bin2int(substr $bs, 0, 5);
+    my $x = int _bin2int(substr $bs, 5+$bits, $bits)/20;
+    my $y = int _bin2int(substr $bs, 5+$bits*3, $bits)/20;
+
+    return ($x, $y, 'SWF');
+}
+
+# Suggested by Matt Mueller <mueller@wetafx.co.nz>, and based on a piece of
+# sample Perl code by a currently-unknown author. Credit will be placed here
+# once the name is determined.
+sub pcdsize
+{
+    my $stream = shift;
+
+    # We use bitwise-and here:
+    ## no critic(ProhibitBitwiseOperators)
+
+    my ($x, $y, $id) = (undef, undef, 'Unable to determine size of PCD data');
+    my $buffer = $READ_IN->($stream, 0xf00);
+
+    # Second-tier sanity check
+    if (substr($buffer, 0x800, 3) ne 'PCD')
+    {
+        return ($x, $y, $id);
+    }
+
+    my $orient = ord(substr $buffer, 0x0e02, 1) & 1; # Clear down to one bit
+    ($x, $y) = @{$Image::Size::PCD_MAP{lc $Image::Size::PCD_SCALE}}
+        [($orient ? (0, 1) : (1, 0))];
+
+    return ($x, $y, 'PCD');
+}
+
+# swfmxsize: determine size of compressed ShockWave/Flash MX files. Adapted
+# from code sent by Victor Kuriashkin <victor@yasp.com>
+sub swfmxsize
+{
+    my $image = shift;
+
+    my $retval = eval {
+        local $SIG{__DIE__} = q{};
+        require Compress::Zlib;
+        1;
+    };
+    if (! $retval)
+    {
+        return (undef, undef, "Error loading Compress::Zlib: $@");
+    }
+
+    my $header = $READ_IN->($image, 1058);
+    my $ver = _bin2int(unpack 'B8', substr $header, 3, 1);
+
+    my ($d, $status) = Compress::Zlib::inflateInit();
+    $header = substr $header, 8, 1024;
+    $header = $d->inflate($header);
+
+    my $bs = unpack 'B133', substr $header, 0, 9;
+    my $bits = _bin2int(substr $bs, 0, 5);
+    my $x = int _bin2int(substr $bs, 5+$bits, $bits)/20;
+    my $y = int _bin2int(substr $bs, 5+$bits*3, $bits)/20;
+
+    return ($x, $y, 'CWS');
+}
+
+# Windows EMF files, requested by Jan v/d Zee
+sub emfsize
+{
+    my $image = shift;
+
+    my ($x, $y);
+    my $buffer = $READ_IN->($image, 24);
+
+    my ($topleft_x, $topleft_y, $bottomright_x, $bottomright_y) =
+        unpack 'x8V!4', $buffer;
+
+    # The four values describe a box *around* the image, not *of* the image.
+    # In other words, the dimensions are not inclusive.
+    $x = $bottomright_x - $topleft_x - 1;
+    $y = $bottomright_y - $topleft_y - 1;
+
+    return ($x, $y, 'EMF');
 }
 
 1;
@@ -846,545 +1394,3 @@ the GNU LGPL 2.1 (L<http://www.opensource.org/licenses/lgpl-2.1.php>).
 Randy J. Ray C<< <rjray@blackperl.com> >>
 
 =cut
-
-###########################################################################
-# Subroutine gets the size of the specified GIF
-###########################################################################
-sub gifsize
-{
-    my $stream = shift;
-
-    my ($cmapsize, $buf, $sh, $sw, $x, $y, $type);
-
-    my $gif_blockskip = sub {
-        my ($skip, $blocktype) = @_;
-        my ($lbuf);
-
-        $READ_IN->($stream, $skip);        # Skip header (if any)
-        while (1)
-        {
-            if (img_eof($stream))
-            {
-                return (undef, undef,
-                        "Invalid/Corrupted GIF (at EOF in GIF $blocktype)");
-            }
-            $lbuf = $READ_IN->($stream, 1);  # Block size
-            last if ord($lbuf) == 0;         # Block terminator
-            $READ_IN->($stream, ord $lbuf);  # Skip data
-        }
-    };
-
-    if ($GIF_BEHAVIOR > 2)
-    {
-        return (undef, undef,
-                "\$Image::Size::GIF_BEHAVIOR out of range: $GIF_BEHAVIOR");
-    }
-
-    # Skip over the identifying string, since we already know this is a GIF
-    $type = $READ_IN->($stream, 6);
-    if (length($buf = $READ_IN->($stream, 7)) != 7 )
-    {
-        return (undef, undef, 'Invalid/Corrupted GIF (bad header)');
-    }
-    ($sw, $sh, $x) = unpack 'vv C', $buf;
-    if ($GIF_BEHAVIOR == 0)
-    {
-        return ($sw, $sh, 'GIF');
-    }
-
-    if ($x & 0x80)
-    {
-        $cmapsize = 3 * (2**(($x & 0x07) + 1));
-        if (! $READ_IN->($stream, $cmapsize))
-        {
-            return (undef, undef,
-                    'Invalid/Corrupted GIF (global color map too small?)');
-        }
-    }
-
-    # Before we start this loop, set $sw and $sh to 0s and use them to track
-    # the largest sub-image in the overall GIF.
-    $sw = $sh = 0;
-
-  FINDIMAGE:
-    while (1)
-    {
-        if (img_eof($stream))
-        {
-            # At this point, if we haven't returned then the user wants the
-            # largest of the sub-images. So, if $sh and $sw are still 0s, then
-            # we didn't see even one Image Descriptor block. Otherwise, return
-            # those two values.
-            if ($sw and $sh)
-            {
-                return ($sw, $sh, 'GIF');
-            }
-            else
-            {
-                return (undef, undef,
-                        'Invalid/Corrupted GIF (no Image Descriptors)');
-            }
-        }
-        $buf = $READ_IN->($stream, 1);
-        ($x) = unpack 'C', $buf;
-        if ($x == 0x2c)
-        {
-            # Image Descriptor (GIF87a, GIF89a 20.c.i)
-            if (length($buf = $READ_IN->($stream, 8)) != 8)
-            {
-                return (undef, undef,
-                        'Invalid/Corrupted GIF (missing image header?)');
-            }
-            ($x, $y) = unpack 'x4 vv', $buf;
-            return ($x, $y, 'GIF') if ($GIF_BEHAVIOR == 1);
-            if ($x > $sw and $y > $sh)
-            {
-                $sw = $x;
-                $sh = $y;
-            }
-        }
-        if ($x == 0x21)
-        {
-            # Extension Introducer (GIF89a 23.c.i, could also be in GIF87a)
-            $buf = $READ_IN->($stream, 1);
-            ($x) = unpack 'C', $buf;
-            if ($x == 0xF9)
-            {
-                # Graphic Control Extension (GIF89a 23.c.ii)
-                $READ_IN->($stream, 6);    # Skip it
-                next FINDIMAGE;       # Look again for Image Descriptor
-            }
-            elsif ($x == 0xFE)
-            {
-                # Comment Extension (GIF89a 24.c.ii)
-                $gif_blockskip->(0, 'Comment');
-                next FINDIMAGE;       # Look again for Image Descriptor
-            }
-            elsif ($x == 0x01)
-            {
-                # Plain Text Label (GIF89a 25.c.ii)
-                $gif_blockskip->(13, 'text data');
-                next FINDIMAGE;       # Look again for Image Descriptor
-            }
-            elsif ($x == 0xFF)
-            {
-                # Application Extension Label (GIF89a 26.c.ii)
-                $gif_blockskip->(12, 'application data');
-                next FINDIMAGE;       # Look again for Image Descriptor
-            }
-            else
-            {
-                return (undef, undef,
-                        sprintf 'Invalid/Corrupted GIF (Unknown ' .
-                                'extension %#x)', $x);
-            }
-        }
-        else
-        {
-            return (undef, undef,
-                    sprintf 'Invalid/Corrupted GIF (Unknown code %#x)', $x);
-        }
-    }
-
-    return (undef, undef, 'gifsize fell through to the end, error');
-}
-
-sub xbmsize
-{
-    my $stream = shift;
-
-    my $input;
-    my ($x, $y, $id) = (undef, undef, 'Could not determine XBM size');
-
-    $input = $READ_IN->($stream, 1024);
-    if ($input =~ /^\#define\s*\S*\s*(\d+)\s*\n\#define\s*\S*\s*(\d+)/ix)
-    {
-        ($x, $y) = ($1, $2);
-        $id = 'XBM';
-    }
-
-    return ($x, $y, $id);
-}
-
-# Added by Randy J. Ray, 30 Jul 1996
-# Size an XPM file by looking for the "X Y N W" line, where X and Y are
-# dimensions, N is the total number of colors defined, and W is the width of
-# a color in the ASCII representation, in characters. We only care about X & Y.
-sub xpmsize
-{
-    my $stream = shift;
-
-    my $line;
-    my ($x, $y, $id) = (undef, undef, 'Could not determine XPM size');
-
-    while ($line = $READ_IN->($stream, 1024))
-    {
-        if ($line =~ /"\s*(\d+)\s+(\d+)(\s+\d+\s+\d+){1,2}\s*"/)
-        {
-            ($x, $y) = ($1, $2);
-            $id = 'XPM';
-            last;
-        }
-    }
-
-    return ($x, $y, $id);
-}
-
-# pngsize : gets the width & height (in pixels) of a png file
-# cor this program is on the cutting edge of technology! (pity it's blunt!)
-#
-# Re-written and tested by tmetro@vl.com
-sub pngsize
-{
-    my $stream = shift;
-
-    my ($x, $y, $id) = (undef, undef, 'Could not determine PNG size');
-    my ($offset, $length);
-
-    # Offset to first Chunk Type code = 8-byte ident + 4-byte chunk length + 1
-    $offset = 12; $length = 4;
-    if ($READ_IN->($stream, $length, $offset) eq 'IHDR')
-    {
-        # IHDR = Image Header
-        $length = 8;
-        ($x, $y) = unpack 'NN', $READ_IN->($stream, $length);
-        $id = 'PNG';
-    }
-
-    return ($x, $y, $id);
-}
-
-# mngsize: gets the width and height (in pixels) of an MNG file.
-# See <URL:http://www.libpng.org/pub/mng/spec/> for the specification.
-#
-# Basically a copy of pngsize.
-sub mngsize
-{
-    my $stream = shift;
-
-    my ($x, $y, $id) = (undef, undef, 'Could not determine MNG size');
-    my ($offset, $length);
-
-    # Offset to first Chunk Type code = 8-byte ident + 4-byte chunk length + 1
-    $offset = 12; $length = 4;
-    if ($READ_IN->($stream, $length, $offset) eq 'MHDR')
-    {
-        # MHDR = Image Header
-        $length = 8;
-        ($x, $y) = unpack 'NN', $READ_IN->($stream, $length);
-        $id = 'MNG';
-    }
-
-    return ($x, $y, $id);
-}
-
-# jpegsize: gets the width and height (in pixels) of a jpeg file
-# Andrew Tong, werdna@ugcs.caltech.edu           February 14, 1995
-# modified slightly by alex@ed.ac.uk
-# and further still by rjray@blackperl.com
-# optimization and general re-write from tmetro@vl.com
-sub jpegsize
-{
-    my $stream = shift;
-
-    my $MARKER     = chr 0xff; # Section marker
-
-    my $SIZE_FIRST = 0xC0;   # Range of segment identifier codes
-    my $SIZE_LAST  = 0xC3;   #  that hold size info.
-
-    my ($x, $y, $id) = (undef, undef, 'Could not determine JPEG size');
-
-    my ($marker, $code, $length);
-    my $segheader;
-
-    # Dummy read to skip header ID
-    $READ_IN->($stream, 2);
-    while (1)
-    {
-        $segheader = $READ_IN->($stream, 2);
-
-        # Extract the segment header.
-        ($marker, $code) = unpack 'a a', $segheader;
-
-        while ( $code eq $MARKER && ($marker = $code) ) {
-            $segheader = $READ_IN->($stream, 1);
-            ($code) = unpack 'a', $segheader;
-        }
-        $segheader = $READ_IN->($stream, 2);
-        $length = unpack 'n', $segheader;
-
-        # Verify that it's a valid segment.
-        if ($marker ne $MARKER)
-        {
-            # Was it there?
-            $id = 'JPEG marker not found';
-            last;
-        }
-        elsif ((ord($code) >= $SIZE_FIRST) && (ord($code) <= $SIZE_LAST))
-        {
-            # Segments that contain size info
-            ($y, $x) = unpack 'xnn', $READ_IN->($stream, 5);
-            $id = 'JPG';
-            last;
-        }
-        else
-        {
-            # Dummy read to skip over data
-            $READ_IN->($stream, ($length - 2));
-        }
-    }
-
-    return ($x, $y, $id);
-}
-
-# ppmsize: gets data on the PPM/PGM/PBM family.
-#
-# Contributed by Carsten Dominik <dominik@strw.LeidenUniv.nl>
-sub ppmsize
-{
-    my $stream = shift;
-
-    my ($x, $y, $id) =
-        (undef, undef, 'Unable to determine size of PPM/PGM/PBM data');
-    my $n;
-    my @table = qw(nil PBM PGM PPM PBM PGM PPM);
-
-    my $header = $READ_IN->($stream, 1024);
-
-    # PPM file of some sort
-    $header =~ s/^\#.*//mg;
-    if ($header =~ /^(?:P([1-7]))\s+(\d+)\s+(\d+)/)
-    {
-        ($n, $x, $y) = ($1, $2, $3);
-
-        if ($n == 7)
-        {
-            # John Bradley's XV thumbnail pics (from inwap@jomis.Tymnet.COM)
-            $id = 'XV';
-            ($x, $y) = ($header =~ /IMGINFO:(\d+)x(\d+)/s);
-        }
-        else
-        {
-            $id = $table[$n];
-        }
-    }
-
-    return ($x, $y, $id);
-}
-
-# tiffsize: size a TIFF image
-#
-# Contributed by Cloyce Spradling <cloyce@headgear.org>
-sub tiffsize
-{
-    my $stream = shift;
-
-    my ($x, $y, $id) = (undef, undef, 'Unable to determine size of TIFF data');
-
-    my $endian = 'n';           # Default to big-endian; I like it better
-    my $header = $READ_IN->($stream, 4);
-    if ($header =~ /II\x2a\x00/o)
-    {
-        # little-endian
-        $endian = 'v';
-    }
-
-    # Set up an association between data types and their corresponding
-    # pack/unpack specification.  Don't take any special pains to deal with
-    # signed numbers; treat them as unsigned because none of the image
-    # dimensions should ever be negative. (I hope.)
-    my @packspec = ( undef,      # nothing (shouldn't happen)
-                     'C',        # BYTE (8-bit unsigned integer)
-                     undef,      # ASCII
-                     $endian,    # SHORT (16-bit unsigned integer)
-                     uc $endian, # LONG (32-bit unsigned integer)
-                     undef,      # RATIONAL
-                     'c',        # SBYTE (8-bit signed integer)
-                     undef,      # UNDEFINED
-                     $endian,    # SSHORT (16-bit unsigned integer)
-                     uc $endian, # SLONG (32-bit unsigned integer)
-                     );
-
-    my $offset = $READ_IN->($stream, 4, 4); # Get offset to IFD
-    $offset = unpack uc $endian, $offset; # Fix it so we can use it
-
-    my $ifd = $READ_IN->($stream, 2, $offset); # Get num. of directory entries
-    my $num_dirent = unpack $endian, $ifd; # Make it useful
-    $offset += 2;
-    $num_dirent = $offset + ($num_dirent * 12); # Calc. maximum offset of IFD
-
-    # Do all the work
-    $ifd = q{};
-    my $tag = 0;
-    my $type = 0;
-    while ((! defined $x) || (! defined$y)) {
-        $ifd = $READ_IN->($stream, 12, $offset);   # Get first directory entry
-        last if (($ifd eq q{}) || ($offset > $num_dirent));
-        $offset += 12;
-        $tag = unpack $endian, $ifd;               # ...and decode its tag
-        $type = unpack $endian, substr $ifd, 2, 2; # ...and the data type
-        # Check the type for sanity.
-        next if (($type > @packspec+0) || (! defined $packspec[$type]));
-        if ($tag == 0x0100)    # ImageWidth (x)
-        {
-            # Decode the value
-            $x = unpack $packspec[$type], substr $ifd, 8, 4;
-        }
-        elsif ($tag == 0x0101) # ImageLength (y)
-        {
-            # Decode the value
-            $y = unpack $packspec[$type], substr $ifd, 8, 4;
-        }
-    }
-
-    # Decide if we were successful or not
-    if (defined $x and defined $y)
-    {
-        $id = 'TIF';
-    }
-    else
-    {
-        $id = q{};
-        if (! defined $x)
-        {
-            $id = 'ImageWidth ';
-        }
-        if (! defined $y)
-        {
-            if ($id ne q{})
-            {
-                $id .= 'and ';
-            }
-            $id .= 'ImageLength ';
-        }
-        $id .= 'tag(s) could not be found';
-    }
-
-    return ($x, $y, $id);
-}
-
-# bmpsize: size a Windows-ish BitMaP image
-#
-# Adapted from code contributed by Aldo Calpini <a.calpini@romagiubileo.it>
-sub bmpsize
-{
-    my $stream = shift;
-
-    my ($x, $y, $id) = (undef, undef, 'Unable to determine size of BMP data');
-    my $buffer;
-
-    $buffer = $READ_IN->($stream, 26);
-    ($x, $y) = unpack 'x18VV', $buffer;
-    if (defined $x and defined $y)
-    {
-        $id = 'BMP';
-    }
-
-    return ($x, $y, $id);
-}
-
-# psdsize: determine the size of a PhotoShop save-file (*.PSD)
-sub psdsize
-{
-    my $stream = shift;
-
-    my ($x, $y, $id) = (undef, undef, 'Unable to determine size of PSD data');
-    my $buffer;
-
-    $buffer = $READ_IN->($stream, 26);
-    ($y, $x) = unpack 'x14NN', $buffer;
-    if (defined $x and defined $y)
-    {
-        $id = 'PSD';
-    }
-
-    return ($x, $y, $id);
-}
-
-# swfsize: determine size of ShockWave/Flash files. Adapted from code sent by
-# Dmitry Dorofeev <dima@yasp.com>
-sub swfsize
-{
-    my $image  = shift;
-    my $header = $READ_IN->($image, 33);
-
-    my $ver = _bin2int(unpack 'B8', substr $header, 3, 1);
-    my $bs = unpack 'B133', substr $header, 8, 17;
-    my $bits = _bin2int(substr $bs, 0, 5);
-    my $x = int _bin2int(substr $bs, 5+$bits, $bits)/20;
-    my $y = int _bin2int(substr $bs, 5+$bits*3, $bits)/20;
-
-    return ($x, $y, 'SWF');
-}
-
-# Suggested by Matt Mueller <mueller@wetafx.co.nz>, and based on a piece of
-# sample Perl code by a currently-unknown author. Credit will be placed here
-# once the name is determined.
-sub pcdsize
-{
-    my $stream = shift;
-
-    my ($x, $y, $id) = (undef, undef, 'Unable to determine size of PCD data');
-    my $buffer = $READ_IN->($stream, 0xf00);
-
-    # Second-tier sanity check
-    if (substr($buffer, 0x800, 3) ne 'PCD')
-    {
-        return ($x, $y, $id);
-    }
-
-    my $orient = ord(substr $buffer, 0x0e02, 1) & 1; # Clear down to one bit
-    ($x, $y) = @{$Image::Size::PCD_MAP{lc $Image::Size::PCD_SCALE}}
-        [($orient ? (0, 1) : (1, 0))];
-
-    return ($x, $y, 'PCD');
-}
-
-# swfmxsize: determine size of compressed ShockWave/Flash MX files. Adapted
-# from code sent by Victor Kuriashkin <victor@yasp.com>
-sub swfmxsize
-{
-    my $image = shift;
-
-    my $retval = eval {
-        local $SIG{__DIE__} = q{};
-        require Compress::Zlib;
-        1;
-    };
-    if (! $retval)
-    {
-        return (undef, undef, "Error loading Compress::Zlib: $@");
-    }
-
-    my $header = $READ_IN->($image, 1058);
-    my $ver = _bin2int(unpack 'B8', substr $header, 3, 1);
-
-    my ($d, $status) = Compress::Zlib::inflateInit();
-    $header = substr $header, 8, 1024;
-    $header = $d->inflate($header);
-
-    my $bs = unpack 'B133', substr $header, 0, 9;
-    my $bits = _bin2int(substr $bs, 0, 5);
-    my $x = int _bin2int(substr $bs, 5+$bits, $bits)/20;
-    my $y = int _bin2int(substr $bs, 5+$bits*3, $bits)/20;
-
-    return ($x, $y, 'CWS');
-}
-
-# Windows EMF files, requested by Jan v/d Zee
-sub emfsize
-{
-    my $image = shift;
-
-    my ($x, $y);
-    my $buffer = $READ_IN->($image, 24);
-
-    my ($x1, $y1, $x2, $y2) = unpack 'x8V!4', $buffer;
-
-    # The four values describe a box *around* the image, not *of* the image.
-    # In other words, the dimensions are not inclusive.
-    $x = $x2 - $x1 - 1;
-    $y = $y2 - $y1 - 1;
-
-    return ($x, $y, 'EMF');
-}
