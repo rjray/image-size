@@ -1101,11 +1101,17 @@ sub jpegsize
     $READ_IN->($stream, 2);
     while (1)
     {
-        $length = 4;
-        $segheader = $READ_IN->($stream, $length);
+        $segheader = $READ_IN->($stream, 2);
 
         # Extract the segment header.
-        ($marker, $code, $length) = unpack 'a a n', $segheader;
+        ($marker, $code) = unpack 'a a', $segheader;
+
+        while ( $code eq $MARKER && ($marker = $code) ) {
+            $segheader = $READ_IN->($stream, 1);
+            ($code) = unpack 'a', $segheader;
+        }
+        $segheader = $READ_IN->($stream, 2);
+        $length = unpack 'n', $segheader;
 
         # Verify that it's a valid segment.
         if ($marker ne $MARKER)
@@ -1117,8 +1123,7 @@ sub jpegsize
         elsif ((ord($code) >= $SIZE_FIRST) && (ord($code) <= $SIZE_LAST))
         {
             # Segments that contain size info
-            $length = 5;
-            ($y, $x) = unpack 'xnn', $READ_IN->($stream, $length);
+            ($y, $x) = unpack 'xnn', $READ_IN->($stream, 5);
             $id = 'JPG';
             last;
         }
