@@ -2,7 +2,7 @@
 
 use IO::File;
 use Image::Size qw(:all);
-use Test::More tests => 18;
+use Test::More tests => 19;
 
 # We now only test the CWS branch if the user already has Compress::Zlib
 # available. We no longer require it for installation.
@@ -73,9 +73,7 @@ SKIP: {
 ($x, $y, $id) = imgsize("${dir}468x60.psd");
 ok(($x == 468 && $y == 60 && $id eq 'PSD'), 'Basic PSD format test');
 
-#
 # Phase two: tests on in-memory strings.
-#
 $fh = new IO::File "< ${dir}test.gif";
 $data = '';
 read $fh, $data, (stat "${dir}test.gif")[7];
@@ -83,9 +81,7 @@ $fh->close;
 ($x, $y, $id) = imgsize(\$data);
 ok(($x == 60 && $y == 40 && $id eq 'GIF'), 'Test in-memory image data');
 
-#
 # Phase three: tests on open IO::File objects.
-#
 $fh = new IO::File "< ${dir}test.gif";
 ($x, $y, $id) = imgsize($fh);
 ok(($x == 60 && $y == 40 && $id eq 'GIF'), 'Test open IO::File object');
@@ -100,5 +96,9 @@ ok(($x == 60 && $y == 40 && $id eq 'GIF' && ($fh->tell == 128)),
    'Test that it leaves open IO::File object in the same position');
 
 $fh->close;
+
+# Phase <whatever>: tests for specific bugs
+($x, $y, $id) = imgsize("${dir}kazeburo-bar.jpg");
+ok(($x == 480 && $y == 640), 'JPG tag-offset bugfix');
 
 exit;
