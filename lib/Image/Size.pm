@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# This file copyright (c) 2010 by Randy J. Ray, all rights reserved
+# This file copyright (c) 2012 by Randy J. Ray, all rights reserved
 #
 # Copying and distribution are permitted under the terms of the Artistic
 # License 2.0 (http://www.opensource.org/licenses/artistic-license-2.0.php) or
@@ -884,7 +884,7 @@ sub swfmxsize
     $header = substr $header, 8, 1024;
     $header = $d->inflate($header);
 
-    my $bs = unpack 'B133', substr $header, 0, 9;
+    my $bs = unpack 'B133', substr $header, 0, 17;
     my $bits = _bin2int(substr $bs, 0, 5);
     my $x = int _bin2int(substr $bs, 5+$bits, $bits)/20;
     my $y = int _bin2int(substr $bs, 5+$bits*3, $bits)/20;
