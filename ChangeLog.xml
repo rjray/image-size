@@ -13,6 +13,53 @@
     information from files in a wide variety of common (and not-so-common)
     formats.
   </description>
+  <release version="3.231" sc:tag="3.231" date="2012-05-23T23:30:00-07:00">
+    <change git:commit="aadafa29c310a2a467ba5b5a3bb7bbdfd7da2fe1">
+      <file path="lib/Image/Size.pm" />
+      <description>
+        Small change to swfmxsize for short-buffer issues.
+      </description>
+    </change>
+    <change git:commit="73916c143c53b5d1eedcce77ed1a2d541b49bbeb">
+      <file path="lib/Image/Size.pm" />
+      <description>
+        Multiple changes in this commit:
+        Abandoned AutoLoader; moved POD to the end of the file now that all the
+        per-format subroutines are part of the file-proper; fixed cases where
+        lack of ImageMagick would cause the error message to be overwritten.
+      </description>
+    </change>
+    <change git:commit="37c54cd271fa9faf1981cb9601b9e1e72ce76f28">
+      <fileset>
+        <file path="t/all.t" />
+        <file path="t/kazeburo-bar.jpg" action="ADD" />
+      </fileset>
+      <description>
+        New test (and image) for JPG tag-offset issue.
+      </description>
+    </change>
+    <change git:commit="1bf120eb3463d11b67a6254a7ebdccfcc8562ac1">
+      <file path="lib/Image/Size.pm" />
+      <description>
+        Applied patch from github user kazeburo:
+        bug fix for some jpeg files
+      </description>
+    </change>
+    <change git:commit="282245f85ca4d644b650e8328c1c2e81d3cb13f0">
+      <file path="imgsize" />
+      <description>
+        Fixed so that default output now catches errors.
+        Previously, you would get an "undefined" warning if there was an error
+        in parsing/sizing the input file.
+      </description>
+    </change>
+    <change git:commit="68b393c33ac248bc6f8230fa69cafddceb805f4f">
+      <file path="lib/Image/Size.pm" />
+      <description>
+        Turns out the 4 bounding-box ints for EMF are signed.
+      </description>
+    </change>
+  </release>
   <release version="3.230" sc:tag="3.230" date="2010-08-29T16:00:00-07:00">
     <change git:commit="269c8932ccabf981d7723ee86c5e1ac49f361ece">
       <fileset>

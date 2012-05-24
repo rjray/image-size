@@ -1,6 +1,6 @@
 h1. Image::Size - Determine the size of images in several common formats
 
-Version: 3.230 (See CHANGES below)
+Version: 3.231 (See CHANGES below)
 
 h2. WHAT IS IT
 
@@ -69,28 +69,27 @@ Please send any reports of problems or bugs to rjray@blackperl.com.
 
 h2. CHANGES
 
-* imgsize
 * lib/Image/Size.pm
 
-p{margin-bottom:2em}. perlcritic clean-ups from new rules.
+p{margin-bottom:2em}. Small change to swfmxsize for short-buffer issues.
 
 * lib/Image/Size.pm
-* t/Test_emf_small.emf (added)
+
+p{margin-bottom:2em}. Multiple changes in this commit: Abandoned AutoLoader; moved POD to the end of the file now that all the per-format subroutines are part of the file-proper; fixed cases where lack of ImageMagick would cause the error message to be overwritten.
+
 * t/all.t
+* t/kazeburo-bar.jpg (added)
 
-p{margin-bottom:2em}. RT #59995: Added support for Windows Enhanced Metafile Format (EMF).
+p{margin-bottom:2em}. New test (and image) for JPG tag-offset issue.
 
-* t/00_load.t (deleted)
-* t/01_pod.t (deleted)
-* t/02_pod_coverage.t (deleted)
-* t/03_meta.t (deleted)
-* t/04_minimumversion.t (deleted)
-* t/05_critic.t (deleted)
-* xt/00_load.t (added)
-* xt/01_pod.t (added)
-* xt/02_pod_coverage.t (added)
-* xt/03_meta.t (added)
-* xt/04_minimumversion.t (added)
-* xt/05_critic.t (added)
+* lib/Image/Size.pm
 
-p{margin-bottom:2em}. Move the author/distro-sanity tests to an "xt" directory.
+p{margin-bottom:2em}. Applied patch from github user kazeburo: bug fix for some jpeg files
+
+* imgsize
+
+p{margin-bottom:2em}. Fixed so that default output now catches errors. Previously, you would get an "undefined" warning if there was an error in parsing/sizing the input file.
+
+* lib/Image/Size.pm
+
+p{margin-bottom:2em}. Turns out the 4 bounding-box ints for EMF are signed.
