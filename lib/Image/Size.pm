@@ -43,7 +43,7 @@ BEGIN
                       %CACHE $NO_CACHE $PCD_SCALE $GIF_BEHAVIOR);
     %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-    $VERSION = '3.231';
+    $VERSION = '3.232';
     $VERSION = eval $VERSION; ## no critic(ProhibitStringyEval)
 
     # Default behavior for GIFs is to return the "screen" size
@@ -901,7 +901,7 @@ sub emfsize
     my $buffer = $READ_IN->($image, 24);
 
     my ($topleft_x, $topleft_y, $bottomright_x, $bottomright_y) =
-        unpack 'x8V!4', $buffer;
+        unpack 'x8V4', $buffer;
 
     # The four values describe a box *around* the image, not *of* the image.
     # In other words, the dimensions are not inclusive.
