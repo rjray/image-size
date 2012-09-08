@@ -792,7 +792,15 @@ sub bmpsize
     my $buffer;
 
     $buffer = $READ_IN->($stream, 26);
-    ($x, $y) = unpack 'x18VV', $buffer;
+    my $header_size = unpack 'x14V', $buffer;
+    if ($header_size == 12)
+    {
+        ($x, $y) = unpack 'x18vv', $buffer;     # old OS/2 header
+    }
+    else
+    {
+        ($x, $y) = unpack 'x18VV', $buffer;     # modern Windows header
+    }
     if (defined $x and defined $y)
     {
         $id = 'BMP';

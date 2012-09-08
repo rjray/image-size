@@ -2,7 +2,7 @@
 
 use IO::File;
 use Image::Size qw(:all);
-use Test::More tests => 19;
+use Test::More tests => 20;
 
 # We now only test the CWS branch if the user already has Compress::Zlib
 # available. We no longer require it for installation.
@@ -52,6 +52,8 @@ ok(($x == 35 && $y == 32 && $id eq 'TIF'), 'Basic TIFF format test (2)');
 # Test BMP code from Aldo Calpini
 ($x, $y, $id) = imgsize("${dir}xterm.bmp");
 ok(($x == 64 && $y == 38 && $id eq 'BMP'), 'Basic BMP format test');
+($x, $y, $id) = imgsize("${dir}old-os2.bmp");
+ok(($x == 1500 && $y == 1000 && $id eq 'BMP'), 'Basic BMP OS/2 format test');
 
 # Test SWF code from Dmitry Dorofeev <dima@yasp.com>
 ($x, $y, $id) = imgsize("${dir}yasp.swf");
