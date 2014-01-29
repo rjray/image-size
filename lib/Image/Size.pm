@@ -131,7 +131,7 @@ sub imgsize ## no critic(ProhibitExcessComplexity)
 
     my ($handle, $header);
     my ($x, $y, $id, $mtime, @list);
-    # These only used if $stream is an existant open FH
+    # These only used if $stream is an existing open FH
     my ($save_pos, $need_restore) = (0, 0);
     # This is for when $stream is a locally-opened file
     my $need_close = 0;
@@ -156,7 +156,7 @@ sub imgsize ## no critic(ProhibitExcessComplexity)
         $save_pos = tell $handle;
         $need_restore = 1;
 
-        # First alteration (didn't wait long, did I?) to the existant handle:
+        # First alteration (didn't wait long, did I?) to the existing handle:
         #
         # assist dain-bramaged operating systems -- SWD
         # SWD: I'm a bit uncomfortable with changing the mode on a file
@@ -234,7 +234,7 @@ sub imgsize ## no critic(ProhibitExcessComplexity)
         $CACHE{$stream} = join q{,}, $mtime, $x, $y, $id;
     }
 
-    # If we were passed an existant file handle, we need to restore the
+    # If we were passed an existing file handle, we need to restore the
     # old filepos:
     if ($need_restore)
     {
@@ -1083,7 +1083,7 @@ parameter reported by B<Image::Magick>, so it may not meet the 2-3 letter
 abbreviation format.  For example, a WBMP file might be reported as
 'Wireless Bitmap (level 0) image' in this case.
 
-=head2 Information Cacheing and C<$NO_CACHE>
+=head2 Information Caching and C<$NO_CACHE>
 
 When a filename is passed to any of the sizing routines, the default behavior
 of the library is to cache the resulting information. The modification-time of
@@ -1092,7 +1092,7 @@ updated. This was originally added due to the fact that a number of CGI
 applications were using this library to generate attributes for pages that
 often used the same graphical element many times over.
 
-However, the cacheing can lead to problems when the files are generated
+However, the caching can lead to problems when the files are generated
 dynamically, at a rate that exceeds the resolution of the modification-time
 value on the filesystem. Thus, the optionally-importable control variable
 C<$NO_CACHE> has been introduced. If this value is anything that evaluates to a
@@ -1166,7 +1166,7 @@ image file.
 =head2 Controlling Behavior with GIF Images
 
 GIF images present a sort of unusual situation when it comes to reading size.
-Because GIFs can be a series of sub-images to be isplayed as an animated
+Because GIFs can be a series of sub-images to be played as an animated
 sequence, what part does the user want to get the size for?
 
 When dealing with GIF files, the user may control the behavior by setting the
@@ -1305,7 +1305,7 @@ including any stages that would re-write the URL or otherwise modify it.
 =head1 DIAGNOSTICS
 
 The base routine, C<imgsize>, returns B<undef> as the first value in its list
-when an error has occured. The third element contains a descriptive
+when an error has occurred. The third element contains a descriptive
 error message.
 
 The other two routines simply return B<undef> in the case of error.
@@ -1316,7 +1316,7 @@ Caching of size data can only be done on inputs that are file names. Open
 file handles and scalar references cannot be reliably transformed into a
 unique key for the table of cache data. Buffers could be cached using the
 MD5 module, and perhaps in the future I will make that an option. I do not,
-however, wish to lengthen the dependancy list by another item at this time.
+however, wish to lengthen the dependency list by another item at this time.
 
 As B<Image::Magick> operates on file names, not handles, the use of it is
 restricted to cases where the input to C<imgsize> is provided as file name.
@@ -1350,7 +1350,7 @@ supplied the PSD (PhotoShop) code, a bug was identified by Alex Weslowski
 was adapted from a script made available by Phil Greenspun, as guided to my
 attention by Matt Mueller I<mueller@wetafx.co.nz>. A thorough read of the
 documentation and source by Philip Newton I<Philip.Newton@datenrevision.de>
-found several typos and a small buglet. Ville Skyttä I<(ville.skytta@iki.fi)>
+found several typos and a small buglet. Ville Skyttï¿½ I<(ville.skytta@iki.fi)>
 provided the MNG and the Image::Magick fallback code. Craig MacKenna
 I<(mackenna@animalhead.com)> suggested making the cache available so that it
 could be used with shared memory, and helped test my change before release.
