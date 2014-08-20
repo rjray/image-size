@@ -325,7 +325,7 @@ sub html_imgsize
 
     # Use lowercase and quotes so that it works with xhtml.
     return ((defined $args[0]) ?
-            sprintf('width="%d" height="%d"', @args) :
+            sprintf('width="%d" height="%d"', @args[0,1]) :
             undef);
 }
 
