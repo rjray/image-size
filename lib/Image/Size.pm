@@ -43,7 +43,7 @@ BEGIN
                       %CACHE $NO_CACHE $PCD_SCALE $GIF_BEHAVIOR);
     %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-    $VERSION = '3.232';
+    $VERSION = '3.233';
     $VERSION = eval $VERSION; ## no critic(ProhibitStringyEval)
 
     # Default behavior for GIFs is to return the "screen" size
