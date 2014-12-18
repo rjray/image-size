@@ -1178,7 +1178,7 @@ GIF-handling code:
 
 =over 4
 
-=item 0
+=item Z<>0
 
 This is the default value. When this value is chosen, the returned dimensions
 are those of the "screen". The "screen" is the display area that the GIF
@@ -1189,7 +1189,7 @@ cropped to fit within the box.
 This is also the fastest method for sizing the GIF, as it reads the least
 amount of data from the image stream.
 
-=item 1
+=item Z<>1
 
 If this value is set, then the size of the first sub-image within the GIF is
 returned. For plain (non-animated) GIF files, this would be the same as the
@@ -1198,7 +1198,7 @@ screen (though it doesn't have to be, strictly-speaking).
 When the first image descriptor block is read, the code immediately returns,
 making this only slightly-less efficient than the previous setting.
 
-=item 2
+=item Z<>2
 
 If this value is chosen, then the code loops through all the sub-images of the
 animated GIF, and returns the dimensions of the largest of them.
