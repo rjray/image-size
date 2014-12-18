@@ -923,6 +923,8 @@ sub emfsize
 
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 Image::Size - read the dimensions of an image in several popular formats
