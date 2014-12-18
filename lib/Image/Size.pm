@@ -1391,6 +1391,10 @@ L<http://github.com/rjray/image-size>
 
 =back
 
+=head1 REPOSITORY
+
+L<https://github.com/rjray/image-size>
+
 =head1 LICENSE AND COPYRIGHT
 
 This file and the code within are copyright (c) 1996-2009 by Randy J. Ray.
