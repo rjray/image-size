@@ -72,6 +72,9 @@ $NO_CACHE = 0;
     qr{^CWS}                     => \&swfmxsize,
     qr{^\x8aMNG\x0d\x0a\x1a\x0a} => \&mngsize,
     qr{^\x01\x00\x00\x00}        => \&emfsize,
+    qr{^RIFF(?s:....)WEBP}       => \&webpsize,
+    qr{^\x00\x00\x01\x00}        => \&icosize,
+    qr{^\x00\x00\x02\x00}        => \&cursize,
 );
 # Kodak photo-CDs are weird. Don't ask me why, you really don't want details.
 %PCD_MAP = ( 'base/16' => [ 192,  128  ],
@@ -919,6 +922,56 @@ sub emfsize
     return ($x, $y, 'EMF');
 }
 
+# WEBP files, see https://developers.google.com/speed/webp/docs/riff_container
+# Added by Baldur Kristinsson, github.com/bk
+sub webpsize {
+    my $img = shift;
+    # There are 26 bytes of lead-in, before the width and height info:
+    # 1. WEBP container
+    #    - 'RIFF', 4 bytes
+    #    - filesize, 4 bytes
+    #    - 'WEBP', 4 bytes
+    # 2. VP8 frame
+    #    - 'VP8', 3 bytes
+    #    - frame meta, 8 bytes
+    #    - marker, 3 bytes
+    my $buf = $READ_IN->($img, 4, 26);
+    my ($raw_w, $raw_h) = unpack('SS', $buf);
+    my $b14 = 2**14 - 1;
+    # The width and height values contain a 2-bit scaling factor,
+    # which is left-shifted by 14 bits. We ignore this, since it seems
+    # not to be relevant for our purposes. WEBP images in actual use
+    # all seem to have a scaling factor of 0, anyway. (The meaning
+    # of the scaling factor is as follows: 0=no upscale, 1=upscale by 5/4,
+    # 2=upscale by 5/3, 3=upscale by 2).
+    #
+    # my $wscale = $raw_w >> 14;
+    # my $hscale = $raw_h >> 14;
+    my $x = $raw_w & $b14;
+    my $y = $raw_h & $b14;
+    return ($x, $y, 'WEBP');
+}
+
+# ICO files, originally contributed by Thomas Walloschke <thw@cpan.org>,
+# see https://rt.cpan.org/Public/Bug/Display.html?id=46279
+# (revised by Baldur Kristinsson, github.com/bk)
+sub icosize {
+    my $img = shift;
+    my ($x, $y) = unpack('CC', $READ_IN->($img, 2, 6));
+    $x = 256 if $x == 0;
+    $y = 256 if $y == 0;
+    return ($x, $y, 'ICO');
+}
+
+# CUR files, originally contributed by Thomas Walloschke <thw@cpan.org>,
+# see https://rt.cpan.org/Public/Bug/Display.html?id=46279
+# (revised by Baldur Kristinsson, github.com/bk)
+sub cursize {
+    my ($x, $y, $ico) = icosize(shift);
+    return ($x, $y, 'CUR');
+}
+
+
 1;
 
 __END__
@@ -1066,6 +1119,12 @@ Image::Size natively understands and sizes data in the following formats:
 =item PCD (Kodak PhotoCD, see notes below)
 
 =item EMF (Windows Enhanced Metafile Format)
+
+=item WEBP
+
+=item ICO (Microsoft icon format)
+
+=item CUR (Microsoft mouse cursor format)
 
 =back
 

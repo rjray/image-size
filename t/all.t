@@ -2,7 +2,7 @@
 
 use IO::File;
 use Image::Size qw(:all);
-use Test::More tests => 20;
+use Test::More tests => 23;
 
 # We now only test the CWS branch if the user already has Compress::Zlib
 # available. We no longer require it for installation.
@@ -62,6 +62,18 @@ ok(($x == 85 && $y == 36 && $id eq 'SWF'), 'Basic SWF format test');
 # Test EMF code
 ($x, $y, $id) = imgsize("${dir}Test_emf_small.emf");
 ok(($x == 638 && $y == 949 && $id eq 'EMF'), 'Basic EMF format test');
+
+# Test WEBP code from Baldur Kristinsson
+($x, $y, $id) = imgsize("${dir}1.sm.webp");
+ok(($x == 320 && $y == 214 && $id eq 'WEBP'), 'Basic WEBP format test');
+
+# Test ICO code from Baldur Kristinsson
+($x, $y, $id) = imgsize("${dir}tux.ico");
+ok(($x == 16 && $y == 16 && $id eq 'ICO'), 'Basic ICO format test');
+
+# Test CUR code from Baldur Kristinsson
+($x, $y, $id) = imgsize("${dir}move.cur");
+ok(($x == 32 && $y == 32 && $id eq 'CUR'), 'Basic CUR format test');
 
 SKIP: {
     skip 'Compress::Zlib not installed', 1 unless $do_cws_test;
