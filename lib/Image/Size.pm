@@ -641,7 +641,11 @@ sub jpegsize
         elsif ((ord($code) >= $SIZE_FIRST) && (ord($code) <= $SIZE_LAST))
         {
             # Segments that contain size info
-            ($y, $x) = unpack 'xnn', $READ_IN->($stream, 5);
+            $length = 5;
+            my $buf = $READ_IN->($stream, $length);
+            # unpack dies on truncated data
+            last if (length($buf) < $length);
+            ($y, $x) = unpack 'xnn', $buf;
             $id = 'JPG';
             last;
         }
