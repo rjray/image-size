@@ -70,5 +70,43 @@ Please send any reports of problems or bugs to rjray@blackperl.com.
 h2. CHANGES
 
 * lib/Image/Size.pm
+* t/all.t
+* t/old-os2.bmp (added)
 
-p{margin-bottom:2em}. Removed the "!" flag in pack template for EMF. It was not needed and it broke on earlier Perls.
+p{margin-bottom:2em}. Add support for old OS/2 version of BMP header (Geoff Richards).
+
+* lib/Image/Size.pm
+
+p{margin-bottom:2em}. Typo fixes (David Steinbrunner).
+
+* lib/Image/Size.pm
+
+p{margin-bottom:2em}. Avoid a sprintf() warning in Perl 5.21. Perl 5.21 introduces a warning for redundant arguments to s?printf(), so sprintf("%d", 1, 2) would warn. This commit silences that warning by passing sprintf the exact number of arguments that it expects (Brian Fraser).
+
+* lib/Image/Size.pm
+
+p{margin-bottom:2em}. Added =encoding utf8 to pod - the accented character was causing a pod error (Neil Bowers).
+
+* lib/Image/Size.pm
+
+p{margin-bottom:2em}. Added Z<> to the =item [012] to resolve pod warning. You can't have =item 0, so the way round this seems to be to add a Z<> (zero width space) before each digit (Neil Bowers).
+
+* lib/Image/Size.pm
+
+p{margin-bottom:2em}. Added link to github repo to doc (Neil Bowers).
+
+* lib/Image/Size.pm
+
+p{margin-bottom:2em}. RT #41238: Applied modified version of patch from user to fix a die problem with unpack on truncated files.
+
+* lib/Image/Size.pm
+* t/1.sm.webp (added)
+* t/all.t
+* t/move.cur (added)
+* t/tux.ico (added)
+
+p{margin-bottom:2em}. Add support for WEBP, ICO and CUR file types (Baldur Kristinsson).
+
+* lib/Image/Size.pm
+
+p{margin-bottom:2em}. Fix some perlcritic issues.

@@ -40,7 +40,7 @@ my $builder = $class->new(
     license            => 'perl',
     dist_author        => 'Randy J. Ray <rjray@blackperl.com>',
     dist_abstract      => 'A library to extract height/width from images',
-    dist_version       => '3.233',
+    dist_version_from  => 'lib/Image/Size.pm',
     build_requires     =>
     {
         'Module::Build' => '0.28',
