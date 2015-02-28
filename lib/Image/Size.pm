@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# This file copyright (c) 2012 by Randy J. Ray, all rights reserved
+# This file copyright (c) 2015 by Randy J. Ray, all rights reserved
 #
 # Copying and distribution are permitted under the terms of the Artistic
 # License 2.0 (http://www.opensource.org/licenses/artistic-license-2.0.php) or
@@ -23,27 +23,25 @@ require 5.006001;
 # These are the Perl::Critic policies that are being turned off globally:
 ## no critic(RequireBriefOpen)
 ## no critic(ProhibitAutomaticExportation)
-## no critic(ProhibitExplicitISA)
 
 use strict;
 use warnings;
 use bytes;
 use vars qw(
-    @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $VERSION $NO_CACHE %CACHE
+    @EXPORT @EXPORT_OK %EXPORT_TAGS $VERSION $NO_CACHE %CACHE
     $GIF_BEHAVIOR @TYPE_MAP %PCD_MAP $PCD_SCALE $READ_IN $LAST_POS
 );
 
-use Exporter;
+use Exporter 'import';
 
 BEGIN
 {
-    @ISA         = qw(Exporter);
     @EXPORT      = qw(imgsize);
     @EXPORT_OK   = qw(imgsize html_imgsize attr_imgsize
                       %CACHE $NO_CACHE $PCD_SCALE $GIF_BEHAVIOR);
     %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
-    $VERSION = '3.233';
+    $VERSION = '3.300';
     $VERSION = eval $VERSION; ## no critic(ProhibitStringyEval)
 
     # Default behavior for GIFs is to return the "screen" size
@@ -368,12 +366,9 @@ sub _bin2int
 ###########################################################################
 # Subroutine gets the size of the specified GIF
 ###########################################################################
-sub gifsize
+sub gifsize ## no critic(ProhibitExcessComplexity)
 {
     my $stream = shift;
-
-    # We use bitwise-and here:
-    ## no critic(ProhibitBitwiseOperators)
 
     my ($cmapsize, $buf, $sh, $sw, $x, $y, $type);
 
@@ -857,9 +852,6 @@ sub pcdsize
 {
     my $stream = shift;
 
-    # We use bitwise-and here:
-    ## no critic(ProhibitBitwiseOperators)
-
     my ($x, $y, $id) = (undef, undef, 'Unable to determine size of PCD data');
     my $buffer = $READ_IN->($stream, 0xf00);
 
@@ -930,6 +922,7 @@ sub emfsize
 # Added by Baldur Kristinsson, github.com/bk
 sub webpsize {
     my $img = shift;
+
     # There are 26 bytes of lead-in, before the width and height info:
     # 1. WEBP container
     #    - 'RIFF', 4 bytes
@@ -940,8 +933,9 @@ sub webpsize {
     #    - frame meta, 8 bytes
     #    - marker, 3 bytes
     my $buf = $READ_IN->($img, 4, 26);
-    my ($raw_w, $raw_h) = unpack('SS', $buf);
+    my ($raw_w, $raw_h) = unpack 'SS', $buf;
     my $b14 = 2**14 - 1;
+
     # The width and height values contain a 2-bit scaling factor,
     # which is left-shifted by 14 bits. We ignore this, since it seems
     # not to be relevant for our purposes. WEBP images in actual use
@@ -953,6 +947,7 @@ sub webpsize {
     # my $hscale = $raw_h >> 14;
     my $x = $raw_w & $b14;
     my $y = $raw_h & $b14;
+
     return ($x, $y, 'WEBP');
 }
 
@@ -961,9 +956,9 @@ sub webpsize {
 # (revised by Baldur Kristinsson, github.com/bk)
 sub icosize {
     my $img = shift;
-    my ($x, $y) = unpack('CC', $READ_IN->($img, 2, 6));
-    $x = 256 if $x == 0;
-    $y = 256 if $y == 0;
+    my ($x, $y) = unpack 'CC', $READ_IN->($img, 2, 6);
+    if ($x == 0) { $x = 256; }
+    if ($y == 0) { $y = 256; }
     return ($x, $y, 'ICO');
 }
 
