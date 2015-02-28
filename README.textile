@@ -1,6 +1,6 @@
 h1. Image::Size - Determine the size of images in several common formats
 
-Version: 3.232 (See CHANGES below)
+Version: 3.300 (See CHANGES below)
 
 h2. WHAT IS IT
 
