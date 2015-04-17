@@ -933,7 +933,7 @@ sub webpsize {
     #    - frame meta, 8 bytes
     #    - marker, 3 bytes
     my $buf = $READ_IN->($img, 4, 26);
-    my ($raw_w, $raw_h) = unpack 'SS', $buf;
+    my ($raw_w, $raw_h) = unpack '(SS)<', $buf;
     my $b14 = 2**14 - 1;
 
     # The width and height values contain a 2-bit scaling factor,
