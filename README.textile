@@ -49,13 +49,13 @@ Alternately, if you are running under Apache and mod_perl:
 
 h2. BUILDING/INSTALLING
 
-This package uses Makefile.PL:
+This package uses Build.PL:
 
 <pre>
 <code>
-        perl Makefile.PL
-        make && make test
-        make install
+        perl Build.PL
+        ./Build && ./Build test
+        ./Build install
 </code>
 </pre>
 
