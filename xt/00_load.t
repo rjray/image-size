@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-use vars qw(@MODULES);
+our @MODULES;
 
 use Test::More;
 
