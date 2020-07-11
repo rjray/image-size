@@ -27,9 +27,9 @@ require 5.006001;
 use strict;
 use warnings;
 use bytes;
-use vars qw(
-    @EXPORT @EXPORT_OK %EXPORT_TAGS $VERSION $NO_CACHE %CACHE
-    $GIF_BEHAVIOR @TYPE_MAP %PCD_MAP $PCD_SCALE $READ_IN $LAST_POS
+our (
+    @EXPORT, @EXPORT_OK, %EXPORT_TAGS, $VERSION, $NO_CACHE, %CACHE,
+    $GIF_BEHAVIOR, @TYPE_MAP, %PCD_MAP, $PCD_SCALE, $READ_IN, $LAST_POS,
 );
 
 use Exporter 'import';
